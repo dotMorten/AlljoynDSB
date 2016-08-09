@@ -19,6 +19,7 @@
 namespace BridgeRT
 {
     class PropertyInterface;
+    class DeviceInterface;
 
     class AllJoynProperty
     {
@@ -26,7 +27,7 @@ namespace BridgeRT
         AllJoynProperty();
         virtual ~AllJoynProperty();
 
-        QStatus Create(_In_ IAdapterAttribute ^adapterAttribute, _In_ PropertyInterface *parent);
+        QStatus Create(_In_ IAdapterAttribute ^adapterAttribute, _In_ DeviceInterface *parent);
         bool IsSameType(_In_ IAdapterAttribute ^adapterAttribute);
 
         inline std::string *GetName()
@@ -44,7 +45,7 @@ namespace BridgeRT
     private:
         QStatus SetName(_In_ Platform::String^ name);
 
-        PropertyInterface *m_parent;
+        DeviceInterface *m_parent;
         Platform::String ^m_originalName;
         Platform::TypeCode m_dsbType;
         Windows::Foundation::PropertyType m_dsbSubType;

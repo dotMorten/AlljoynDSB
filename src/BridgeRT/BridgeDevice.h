@@ -26,6 +26,8 @@ namespace BridgeRT
 {
     class DeviceMain;
     class DeviceProperty;
+    class DeviceInterface;
+    class DeviceBusObject;
     class PropertyInterface;
     class ControlPanel;
     class LSF;
@@ -50,6 +52,7 @@ namespace BridgeRT
         std::string GetBusObjectPath(_In_ IAdapterProperty ^adapterProperty);
         bool IsEqual(_In_ IAdapterDevice ^device);
         bool IsBusObjectPathUnique(std::string &path);
+        alljoyn_busobject GetBusObject(std::string &path);
         inline DWORD GetUniqueIdForInterface()
         {
             return m_uniqueIdForInterfaces++;
@@ -87,11 +90,12 @@ namespace BridgeRT
         QStatus ConnectToAllJoyn();
         void ShutdownAllJoyn();
 
-        QStatus CreateDeviceProperties();
-        QStatus GetInterfaceProperty(_In_ IAdapterProperty ^adapterProperty, _Out_ PropertyInterface **propertyInterface);
+        QStatus CreateBusObjects();
+       // QStatus CreateDeviceProperties();
+        //QStatus GetInterfaceProperty(_In_ IAdapterProperty ^adapterProperty, _Out_ PropertyInterface **propertyInterface);
         PropertyInterface *FindMatchingInterfaceProperty(_In_ std::string & interfaceName);
         PropertyInterface *FindMatchingInterfaceProperty(_In_ IAdapterProperty ^adapterProperty);
-        QStatus CreateInterfaceProperty(_In_ IAdapterProperty ^adapterProperty, _In_ std::string & interfaceName, _Out_ PropertyInterface **propertyInterface);
+       // QStatus CreateInterfaceProperty(_In_ IAdapterProperty ^adapterProperty, _In_ std::string & interfaceName, _Out_ PropertyInterface **propertyInterface);
 
         QStatus BuildServiceName();
 
@@ -107,10 +111,12 @@ namespace BridgeRT
         std::vector<alljoyn_sessionid> m_activeSessions;
 
         // list of device properties
-        std::map<std::string, DeviceProperty *> m_deviceProperties;
+        //std::map<std::string, DeviceProperty *> m_deviceProperties;
+
+        std::map<std::string, DeviceBusObject *> m_deviceBusObjects;
 
         // list of AllJoyn interfaces that a device property can expose
-        std::vector<PropertyInterface *>    m_propertyInterfaces;
+        //std::vector<PropertyInterface *>    m_propertyInterfaces;
 
         DWORD m_uniqueIdForInterfaces;
 

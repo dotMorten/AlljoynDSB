@@ -491,7 +491,7 @@ int32
 DsbBridge::registerAdapterSignalHandlers(bool IsRegister)
 {
     AutoLock sync(this->m_bridgeLock);
-
+    
     for (auto signal : this->m_adapter->Signals)
     {
         uint32 status;

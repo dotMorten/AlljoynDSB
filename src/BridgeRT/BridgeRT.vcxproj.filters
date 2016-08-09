@@ -42,7 +42,8 @@
     <ClCompile Include="LSF.cpp" />
     <ClCompile Include="LSFSignalHandler.cpp" />
     <ClCompile Include="BridgeUtils.cpp" />
-    <ClCompile Include="AdapterBridgeServiceImplementation.cpp" />
+    <ClCompile Include="DeviceBusObject.cpp" />
+    <ClCompile Include="DeviceInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -89,6 +90,7 @@
     <ClInclude Include="LSFSignalHandler.h" />
     <ClInclude Include="LSFEnums.h" />
     <ClInclude Include="BridgeUtils.h" />
-    <ClInclude Include="AdapterBridgeServiceImplementation.h" />
+    <ClInclude Include="DeviceBusObject.h" />
+    <ClInclude Include="DeviceInterface.h" />
   </ItemGroup>
 </Project>

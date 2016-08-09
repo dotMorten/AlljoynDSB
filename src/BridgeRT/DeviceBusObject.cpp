@@ -20,9 +20,10 @@
 
 #include "Bridge.h"
 #include "BridgeDevice.h"
+#include "DeviceBusObject.h"
+#include "DeviceInterface.h"
 #include "DeviceProperty.h"
 #include "PropertyInterface.h"
-#include "DeviceInterface.h"
 #include "AllJoynProperty.h"
 #include "AllJoynHelper.h"
 
@@ -35,59 +36,97 @@ using namespace BridgeRT;
 using namespace std;
 using namespace Windows::Foundation;
 
-DeviceProperty::DeviceProperty()
-    : m_deviceProperty(nullptr),
-    m_parent(nullptr),
+DeviceBusObject::DeviceBusObject() 
+    : m_parent(nullptr),
     m_AJBusObject(NULL),
-    m_registeredOnAllJoyn(false),
-    m_propertyInterface(nullptr)
+    m_registeredOnAllJoyn(false)
 {
 }
 
-DeviceProperty::~DeviceProperty()
+DeviceBusObject::~DeviceBusObject()
 {
 }
 
-QStatus DeviceProperty::Initialize(IAdapterProperty ^deviceProperty,  PropertyInterface *propertyInterface, BridgeDevice ^parent)
+QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^parent)
 {
     QStatus status = ER_OK;
     string tempString;
+    alljoyn_busobject_callbacks callbacks =
+    {
+        &DeviceBusObject::GetProperty,
+        &DeviceBusObject::SetProperty,
+        nullptr,
+        nullptr
+    };
 
     // sanity check
-    if (nullptr == deviceProperty)
+    if (nullptr == busObject)
+    {
+        status = ER_BAD_ARG_1;
+        goto leave;
+    }\
+    if (nullptr == busObject->ObjectPath)
     {
         status = ER_BAD_ARG_1;
         goto leave;
     }
-    if (nullptr == propertyInterface)
+    if (nullptr == parent)
     {
         status = ER_BAD_ARG_2;
         goto leave;
     }
-    if (nullptr == parent)
-    {
-        status = ER_BAD_ARG_3;
-        goto leave;
-    }
 
-    m_deviceProperty = deviceProperty;
-    m_propertyInterface = propertyInterface;
     m_parent = parent;
 
+    // build bus object path
+    AllJoynHelper::EncodeBusObjectName(busObject->ObjectPath, tempString);
+    m_AJBusObjectPath = "/" + tempString;
 
-    status = PairAjProperties();
-    if (ER_OK != status)
+    alljoyn_busobject bus = parent->GetBusObject(m_AJBusObjectPath);
+    if (bus != nullptr)
     {
+        status = ER_BAD_ARG_1;
         goto leave;
     }
-    m_registeredOnAllJoyn = true;
 
+    // create alljoyn bus object and register it
+    m_AJBusObject = alljoyn_busobject_create(m_AJBusObjectPath.c_str(), QCC_FALSE, &callbacks, this);
+    if (NULL == m_AJBusObject)
+    {
+        status = ER_OUT_OF_MEMORY;
+        goto leave;
+    }
+
+    for (auto iface : busObject->Interfaces)
+    {
+        // create device property
+        auto deviceProperty = new (std::nothrow) DeviceInterface();
+        if (nullptr == deviceProperty)
+        {
+            status = ER_OUT_OF_MEMORY;
+            goto leave;
+        }
+        status = deviceProperty->Initialize(iface, this, parent);
+        if (ER_OK != status)
+        {
+            goto leave;
+        }
+        m_interfaces.insert(std::make_pair(*deviceProperty->GetInterfaceName(), deviceProperty));
+        deviceProperty = nullptr;
+    }
+    status = alljoyn_busattachment_registerbusobject(parent->GetBusAttachment(), m_AJBusObject);
+    m_registeredOnAllJoyn = true;
 leave:
     return status;
 }
 
-void DeviceProperty::Shutdown()
+void DeviceBusObject::Shutdown()
 {
+    for (auto &var : m_interfaces)
+    {
+        var.second->Shutdown();
+        delete var.second;
+    }
     if (NULL != m_AJBusObject)
     {
         if (m_registeredOnAllJoyn)
@@ -99,77 +138,40 @@ void DeviceProperty::Shutdown()
         alljoyn_busobject_destroy(m_AJBusObject);
         m_AJBusObject = NULL;
     }
-    m_propertyInterface = nullptr;
     m_parent = nullptr;
     m_AJBusObjectPath.clear();
-    m_AJpropertyAdapterValuePairs.clear();
 }
 
-QStatus BridgeRT::DeviceProperty::PairAjProperties()
-{
-    QStatus status = ER_OK;
 
-    vector <IAdapterAttribute ^> tempList;
-
-    // create temporary list of IAdapterValue that have to match with one of the
-    // AllJoyn properties
-    for (auto adapterAttr : m_deviceProperty->Attributes)
-    {
-        tempList.push_back(adapterAttr);
-    }
-
-    // go through AllJoyn properties and find matching IAdapterValue
-    for (auto ajProperty : m_propertyInterface->GetAJProperties())
-    {
-        bool paired = false;
-
-        auto adapterAttr = tempList.end();
-        for (adapterAttr = tempList.begin(); adapterAttr != tempList.end(); adapterAttr++)
-        {
-            if (ajProperty->IsSameType(*adapterAttr))
-            {
-                AJpropertyAdapterValuePair tempPair = { ajProperty, *adapterAttr };
-                m_AJpropertyAdapterValuePairs.insert(std::make_pair(*ajProperty->GetName(), tempPair));
-                paired = true;
-                break;
-            }
-        }
-        if (!paired)
-        {
-            // a matching IAdapterValue must exist for each AllJoyn property
-            status = ER_INVALID_DATA;
-            goto leave;
-        }
-
-        // remove adapterValue from temp list
-        tempList.erase(adapterAttr);
-    }
-
-leave:
-    return status;
-}
-
-QStatus AJ_CALL DeviceProperty::GetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _Out_ alljoyn_msgarg val)
+QStatus AJ_CALL DeviceBusObject::GetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _Out_ alljoyn_msgarg val)
 {
     QStatus status = ER_OK;
     uint32 adapterStatus = ERROR_SUCCESS;
-    DeviceProperty *deviceProperty = nullptr;
+    DeviceBusObject *deviceBus = nullptr;
     IAdapterAttribute ^adapterAttr = nullptr;
     IAdapterValue ^adapterValue = nullptr;
     AllJoynProperty *ajProperty = nullptr;
     IAdapterIoRequest^ request;
-
+    DeviceProperty* deviceProperty = nullptr;
     UNREFERENCED_PARAMETER(ifcName);
 
-    deviceProperty = (DeviceProperty *)context;
-    if (nullptr == deviceProperty)	// sanity test
+    deviceBus = (DeviceBusObject *)context;
+    if (nullptr == deviceBus)	// sanity test
     {
         return ER_BAD_ARG_1;
     }
+    auto ifIndex = deviceBus->m_interfaces.find(ifcName);
+    if (deviceBus->m_interfaces.end() == ifIndex)
+    {
+        return ER_BUS_NO_SUCH_INTERFACE;
+    }
 
+    auto iface = ifIndex->second;
+    deviceProperty = iface->GetDeviceProperties();
+    auto pairs = deviceProperty->GetAJpropertyAdapterValuePairs();
     // identify alljoyn property and its corresponding adapter value
-    auto index = deviceProperty->m_AJpropertyAdapterValuePairs.find(propName);
-    if (deviceProperty->m_AJpropertyAdapterValuePairs.end() == index)
+    auto index = pairs.find(propName);
+    if (pairs.end() == index)
     {
         status = ER_BUS_NO_SUCH_PROPERTY;
         goto leave;
@@ -180,7 +182,7 @@ QStatus AJ_CALL DeviceProperty::GetProperty(_In_ const void* context, _In_z_ con
     adapterValue = adapterAttr->Value;
 
     // get value of adapter value
-    adapterStatus = DsbBridge::SingleInstance()->GetAdapter()->GetPropertyValue(deviceProperty->m_deviceProperty, adapterValue->Name, &adapterValue, &request);
+    adapterStatus = DsbBridge::SingleInstance()->GetAdapter()->GetPropertyValue(deviceProperty->GetAdapterProperty(), adapterValue->Name, &adapterValue, &request);
     if (ERROR_IO_PENDING == adapterStatus &&
         nullptr != request)
     {
@@ -200,10 +202,11 @@ leave:
     return status;
 }
 
-QStatus AJ_CALL DeviceProperty::SetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _In_ alljoyn_msgarg val)
+QStatus AJ_CALL DeviceBusObject::SetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _In_ alljoyn_msgarg val)
 {
     QStatus status = ER_OK;
     uint32 adapterStatus = ERROR_SUCCESS;
+    DeviceBusObject *deviceBus = nullptr;
     DeviceProperty *deviceProperty = nullptr;
     IAdapterAttribute^ adapterAttr = nullptr;
     IAdapterValue ^adapterValue = nullptr;
@@ -212,15 +215,23 @@ QStatus AJ_CALL DeviceProperty::SetProperty(_In_ const void* context, _In_z_ con
 
     UNREFERENCED_PARAMETER(ifcName);
 
-    deviceProperty = (DeviceProperty *)context;
-    if (nullptr == deviceProperty)	// sanity test
+    deviceBus = (DeviceBusObject *)context;
+    if (nullptr == deviceBus)	// sanity test
     {
         return ER_BAD_ARG_1;
     }
+    auto ifIndex = deviceBus->m_interfaces.find(ifcName);
+    if (deviceBus->m_interfaces.end() == ifIndex)
+    {
+        return ER_BUS_NO_SUCH_INTERFACE;
+    }
 
     // identify alljoyn property and its corresponding adapter value
-    auto index = deviceProperty->m_AJpropertyAdapterValuePairs.find(propName);
-    if (deviceProperty->m_AJpropertyAdapterValuePairs.end() == index)
+    auto iface = ifIndex->second;
+    deviceProperty = iface->GetDeviceProperties();
+    auto pairs = deviceProperty->GetAJpropertyAdapterValuePairs();
+    auto index = pairs.find(propName);
+    if (pairs.end() == index)
     {
         status = ER_BUS_NO_SUCH_PROPERTY;
         goto leave;
@@ -238,7 +249,7 @@ QStatus AJ_CALL DeviceProperty::SetProperty(_In_ const void* context, _In_z_ con
     }
 
     // set value in adapter
-    adapterStatus = DsbBridge::SingleInstance()->GetAdapter()->SetPropertyValue(deviceProperty->m_deviceProperty, adapterValue, &request);
+    adapterStatus = DsbBridge::SingleInstance()->GetAdapter()->SetPropertyValue(deviceProperty->GetAdapterProperty(), adapterValue, &request);
     if (ERROR_IO_PENDING == adapterStatus &&
         nullptr != request)
     {
@@ -260,10 +271,12 @@ leave:
     return status;
 }
 
-void DeviceProperty::EmitSignalCOV(IAdapterValue ^newValue, const std::vector<alljoyn_sessionid>& sessionIds)
+void DeviceBusObject::EmitSignalCOV(IAdapterValue ^newValue, const std::vector<alljoyn_sessionid>& sessionIds)
 {
     QStatus status = ER_OK;
     alljoyn_msgarg msgArg = NULL;
+    throw;
+    /* TODO
     auto valuePair = m_AJpropertyAdapterValuePairs.end();
 
     // sanity check
@@ -304,7 +317,7 @@ void DeviceProperty::EmitSignalCOV(IAdapterValue ^newValue, const std::vector<al
 	{
 		// emit property change
 		alljoyn_busobject_emitpropertychanged(m_AJBusObject,
-			m_propertyInterface->GetInterface()->GetInterfaceName()->c_str(),
+			m_propertyInterface->GetInterfaceName()->c_str(),
 			valuePair->second.ajProperty->GetName()->c_str(),
 			msgArg, sessionId);
 	}
@@ -314,6 +327,6 @@ leave:
     {
         alljoyn_msgarg_destroy(msgArg);
     }
-
+    */
     return;
 }

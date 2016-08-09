@@ -19,6 +19,7 @@
 #include "Bridge.h"
 #include "BridgeDevice.h"
 #include "PropertyInterface.h"
+#include "DeviceInterface.h"
 #include "AllJoynProperty.h"
 #include "BridgeUtils.h"
 
@@ -32,7 +33,7 @@ static std::string FALSE_VALUE = "false";
 static std::string INVALIDATES_VALUE = "invalidates";
 
 PropertyInterface::PropertyInterface()
-    : m_interfaceDescription(NULL),
+    : m_interface(NULL),
     m_indexForAJProperty(1)
 {
 }
@@ -46,7 +47,7 @@ PropertyInterface::~PropertyInterface()
     m_AJProperties.clear();
 }
 
-QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, _In_ string &name, BridgeDevice ^device)
+QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, DeviceInterface *iface, BridgeDevice ^device)
 {
     QStatus status = ER_OK;
     string tempName;
@@ -58,7 +59,7 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, _In_ string
         status = ER_BAD_ARG_1;
         goto leave;
     }
-    if (0 == name.length())
+    if (0 == adapterProperty->Name->Length())
     {
         status = ER_BAD_ARG_2;
         goto leave;
@@ -68,23 +69,9 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, _In_ string
         status = ER_BAD_ARG_3;
         goto leave;
     }
-
-    m_interfaceName = name; 
-
-    // create alljoyn interface 
-    // note that the interface isn't suppose to already exist => ER_BUS_IFACE_ALREADY_EXISTS is an error
-    if (DsbBridge::SingleInstance()->GetConfigManager()->IsDeviceAccessSecured())
-    {
-        status = alljoyn_busattachment_createinterface_secure(device->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription, AJ_IFC_SECURITY_REQUIRED);
-    }
-    else
-    {
-        status = alljoyn_busattachment_createinterface(device->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription);
-    }
-    if (ER_OK != status)
-    {
-        return status;
-    }
+    m_interface = iface;
+    // m_interfaceName = ConvertTo<std::string>(iface->GetInterfaceName());
+    auto m_interfaceDescription = iface->GetInterfaceDescription();
 
     // create alljoyn properties from attributes of adapter property
     for (auto adapterAttribute : adapterProperty->Attributes)
@@ -97,7 +84,7 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, _In_ string
             goto leave;
         }
 
-        status = ajProperty->Create(adapterAttribute, this);
+        status = ajProperty->Create(adapterAttribute, iface);
         if (ER_OK != status)
         {
             goto leave;
@@ -118,7 +105,7 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, _In_ string
             alljoynAccess = ALLJOYN_PROP_ACCESS_RW;
             break;
         }
-
+        
         // expose property on alljoyn
         status = alljoyn_interfacedescription_addproperty(m_interfaceDescription, 
             ajProperty->GetName()->c_str(), 

@@ -131,7 +131,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204;4267;</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;$(ProjectDir)..\BackgroundHost\BackgroundHost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -156,7 +156,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204;4267;</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;$(ProjectDir)..\BackgroundHost\BackgroundHost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <ExceptionHandling>Async</ExceptionHandling>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -177,7 +177,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204;4267;</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;$(ProjectDir)..\BackgroundHost\BackgroundHost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
@@ -197,7 +197,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204;4267;</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;$(ProjectDir)..\BackgroundHost\BackgroundHost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
@@ -219,7 +219,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204;4267;</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;$(ProjectDir)..\BackgroundHost\BackgroundHost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -240,7 +240,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj /ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>28204;4267;</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;$(ProjectDir)..\BackgroundHost\BackgroundHost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindowsSdkDir_UAP)\Include\$(TargetPlatformResourceVersion)\um\AllJoyn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
@@ -252,9 +252,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AdapterBridgeServiceImplementation.h" />
     <ClInclude Include="AdapterConstants.h" />
     <ClInclude Include="AllJoynAboutIcon.h" />
+    <ClInclude Include="DeviceBusObject.h" />
+    <ClInclude Include="DeviceInterface.h" />
     <ClInclude Include="ILSFHandler.h" />
     <ClInclude Include="LampDetails.h" />
     <ClInclude Include="LampParameters.h" />
@@ -299,8 +300,9 @@
     <ClInclude Include="WidgetSignalHandler.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AdapterBridgeServiceImplementation.cpp" />
     <ClCompile Include="AllJoynAboutIcon.cpp" />
+    <ClCompile Include="DeviceBusObject.cpp" />
+    <ClCompile Include="DeviceInterface.cpp" />
     <ClCompile Include="LampDetails.cpp" />
     <ClCompile Include="LampParameters.cpp" />
     <ClCompile Include="LampService.cpp" />
@@ -342,11 +344,6 @@
     <ClCompile Include="WidgetPropertySwitch.cpp" />
     <ClCompile Include="WidgetPropertyTextBox.cpp" />
     <ClCompile Include="WidgetSignalHandler.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BackgroundHost\BackgroundHost\BackgroundHost.vcxproj">
-      <Project>{98b5350d-3b67-4109-9cd5-1a675295c461}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

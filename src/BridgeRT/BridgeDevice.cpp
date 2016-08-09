@@ -22,6 +22,8 @@
 #include "DsbServiceNames.h"
 #include "BridgeDevice.h"
 #include "DeviceProperty.h"
+#include "DeviceInterface.h"
+#include "DeviceBusObject.h"
 #include "PropertyInterface.h"
 #include "DeviceMain.h"
 #include "AllJoynHelper.h"
@@ -109,8 +111,14 @@ QStatus BridgeDevice::Initialize(IAdapterDevice ^device)
         m_icon.Initialize(m_AJBusAttachment, device->Icon);
     }
 
+    status = CreateBusObjects();
+    if (ER_OK != status)
+    {
+        goto leave;
+    }
+
     // create device properties
-    status = CreateDeviceProperties();
+    //status = CreateDeviceProperties();
     if (ER_OK != status)
     {
         goto leave;
@@ -200,12 +208,12 @@ void BridgeDevice::Shutdown()
     }
 
     // shutdown device properties
-    for (auto &var : m_deviceProperties)
+    for (auto &var : m_deviceBusObjects)
     {
         var.second->Shutdown();
         delete var.second;
     }
-    m_deviceProperties.clear();
+    m_deviceBusObjects.clear();
 
     // shutdown main device interface
     if (nullptr != m_deviceMain)
@@ -213,13 +221,6 @@ void BridgeDevice::Shutdown()
         delete m_deviceMain;
         m_deviceMain = nullptr;
     }
-
-    // shutdown interface
-    for (auto &propertyInterface : m_propertyInterfaces)
-    {
-        delete propertyInterface;
-    }
-    m_propertyInterfaces.clear();
 
     // shutdown AllJoyn
     ShutdownAllJoyn();
@@ -281,6 +282,45 @@ leave:
     return status;
 }
 
+QStatus BridgeDevice::CreateBusObjects()
+{
+    QStatus status = ER_OK;
+    // verify if change of value signal (aka COV) is supported
+    // this must be done before creating any interface otherwise
+    // alljoyn will never be able to signal change of value of an exposed
+    // property
+    VerifyCOVSupport();
+
+    for (auto tempBusObject : m_device->BusObjects)
+    {
+        DeviceInterface *propertyInterface = nullptr;
+
+        // create device property
+        auto deviceBusObject = new (std::nothrow) DeviceBusObject();
+        if (nullptr == deviceBusObject)
+        {
+            status = ER_OUT_OF_MEMORY;
+            goto leave;
+        }
+        status = deviceBusObject->Initialize(tempBusObject, this);
+        if (ER_OK != status)
+        {
+            goto leave;
+        }
+        m_deviceBusObjects.insert(std::make_pair(*deviceBusObject->GetPathName(), deviceBusObject));
+        for (auto iface : deviceBusObject->GetInterfaces())
+        {
+            auto path = deviceBusObject->GetPathName();
+            auto hasProp = alljoyn_interfacedescription_hasproperties(iface.second->GetInterfaceDescription());
+            //m_about.AddObject(deviceBusObject->GetBusObject(), iface.second->GetInterfaceDescription());
+        }
+        //alljoyn_busattachment_registerbusobject(m_AJBusAttachment, deviceBusObject->GetBusObject());
+        deviceBusObject = nullptr;
+    }
+leave:
+    return status;
+}
+/*
 QStatus BridgeDevice::CreateDeviceProperties()
 {
     QStatus status = ER_OK;
@@ -317,7 +357,7 @@ QStatus BridgeDevice::CreateDeviceProperties()
             goto leave;
         }
         m_deviceProperties.insert(std::make_pair(*deviceProperty->GetPathName(), deviceProperty));
-        m_about.AddObject(deviceProperty->GetBusObject(), deviceProperty->GetPropertyInterface()->GetInterfaceDescription());
+        m_about.AddObject(deviceProperty->GetBusObject(), deviceProperty->GetPropertyInterface()->GetInterface()->GetInterfaceDescription());
 
         deviceProperty = nullptr;
     }
@@ -330,17 +370,41 @@ leave:
     }
     return status;
 }
-
+*/
 bool BridgeDevice::IsBusObjectPathUnique(std::string &path)
 {
-    auto index = m_deviceProperties.find(path);
-    if (m_deviceProperties.end() == index)
+    auto index = m_deviceBusObjects.find(path);
+    if (m_deviceBusObjects.end() == index)
     {
         return true;
     }
     else
     {
         return false;
+    }
+    // TODO: Remove
+   /* auto index2 = m_deviceProperties.find(path);
+    if (m_deviceProperties.end() == index2)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }*/
+}
+
+alljoyn_busobject BridgeDevice::GetBusObject(std::string &path)
+{
+    auto index = m_deviceBusObjects.find(path);
+    if (m_deviceBusObjects.end() == index)
+    {
+        return nullptr;
+    }
+    else
+    {
+        auto iface = m_deviceBusObjects.at(path);
+        return iface->GetBusObject();
     }
 }
 
@@ -524,68 +588,68 @@ void BridgeDevice::ShutdownAllJoyn()
 PropertyInterface *BridgeDevice::FindMatchingInterfaceProperty(string & interfaceName)
 {
     PropertyInterface *propertyInterface = nullptr;
-
-    for (auto tempInterface : m_propertyInterfaces)
+    throw; //TODO
+    /*for (auto tempInterface : m_propertyInterfaces)
     {
-        if ((*tempInterface->GetInterfaceName()) == interfaceName)
+        if ((*tempInterface->GetInterface()->GetInterfaceName()) == interfaceName)
         {
             propertyInterface = tempInterface;
             break;
         }
-    }
+    }*/
     return propertyInterface;
 }
 
 PropertyInterface *BridgeDevice::FindMatchingInterfaceProperty(IAdapterProperty ^adapterProperty)
 {
     PropertyInterface *propertyInterface = nullptr;
-
-    for (auto tempInterface : m_propertyInterfaces)
+    throw; //TODO
+    /*for (auto tempInterface : m_propertyInterfaces)
     {
         if (tempInterface->InterfaceMatchWithAdapterProperty(adapterProperty))
         {
             propertyInterface = tempInterface;
             break;
         }
-    }
+    }*/
     return propertyInterface;
 }
 
-QStatus BridgeDevice::CreateInterfaceProperty(IAdapterProperty ^adapterProperty, string & interfaceName, PropertyInterface **propertyInterface)
-{
-    QStatus status = ER_OK;
-    PropertyInterface *newInterface = nullptr;
+//QStatus BridgeDevice::CreateInterfaceProperty(IAdapterProperty ^adapterProperty, string & interfaceName, PropertyInterface **propertyInterface)
+//{
+//    QStatus status = ER_OK;
+//    PropertyInterface *newInterface = nullptr;
+//
+//    *propertyInterface = nullptr;
+//
+//    // create new interface
+//    newInterface = new(std::nothrow) PropertyInterface();
+//    if (nullptr == newInterface)
+//    {
+//        status = ER_OUT_OF_MEMORY;
+//        goto leave;
+//    }
+//
+//    status = newInterface->Create(adapterProperty, interfaceName, this);
+//    if (ER_OK != status)
+//    {
+//        goto leave;
+//    }
+//
+//    // add new interface in interface list
+//    m_propertyInterfaces.push_back(newInterface);
+//    *propertyInterface = newInterface;
+//
+//leave:
+//    if (ER_OK != status &&
+//        nullptr != newInterface)
+//    {
+//        delete newInterface;
+//    }
+//    return status;
+//}
 
-    *propertyInterface = nullptr;
-
-    // create new interface
-    newInterface = new(std::nothrow) PropertyInterface();
-    if (nullptr == newInterface)
-    {
-        status = ER_OUT_OF_MEMORY;
-        goto leave;
-    }
-
-    status = newInterface->Create(adapterProperty, interfaceName, this);
-    if (ER_OK != status)
-    {
-        goto leave;
-    }
-
-    // add new interface in interface list
-    m_propertyInterfaces.push_back(newInterface);
-    *propertyInterface = newInterface;
-
-leave:
-    if (ER_OK != status &&
-        nullptr != newInterface)
-    {
-        delete newInterface;
-    }
-    return status;
-}
-
-QStatus BridgeDevice::GetInterfaceProperty(IAdapterProperty ^adapterProperty, PropertyInterface **propertyInterface)
+/*QStatus BridgeDevice::GetInterfaceProperty(IAdapterProperty ^adapterProperty, PropertyInterface **propertyInterface)
 {
     string interfaceName;
     std::ostringstream uniqueIdForInterface;
@@ -636,7 +700,7 @@ QStatus BridgeDevice::GetInterfaceProperty(IAdapterProperty ^adapterProperty, Pr
     }
 
     return status;
-}
+}*/
 
 bool BridgeRT::BridgeDevice::IsEqual(IAdapterDevice ^ device)
 {
@@ -805,31 +869,32 @@ void BridgeDevice::HandleCOVSignal(IAdapterSignal ^ signal)
             newValue = dynamic_cast<IAdapterValue^>(param->Data);
         }
     }
-
-    if (adapterProperty != nullptr && newValue != nullptr)
-    {
-        // get the property that has changed
-        for (auto val : m_deviceProperties)
-        {
-            if (val.second->GetAdapterProperty() == adapterProperty)
-            {
-                val.second->EmitSignalCOV(newValue, m_activeSessions);
-                break;
-            }
-        }
-    }
+    throw;
+    //if (adapterProperty != nullptr && newValue != nullptr)
+    //{
+    //    // get the property that has changed
+    //    for (auto val : m_deviceProperties)
+    //    {
+    //        if (val.second->GetAdapterProperty() == adapterProperty)
+    //        {
+    //            val.second->EmitSignalCOV(newValue, m_activeSessions);
+    //            break;
+    //        }
+    //    }
+    //}
 }
 
 IAdapterProperty ^BridgeDevice::GetAdapterProperty(_In_ std::string busObjectPath)
 {
     IAdapterProperty ^adapterProperty = nullptr;
 
+    throw; //TODO
     // find IAdapterProperty from its exposed bus object path
-    auto val = m_deviceProperties.find(busObjectPath.c_str());
-    if (val != m_deviceProperties.end())
-    {
-        adapterProperty = val->second->GetAdapterProperty();
-    }
+    //auto val = m_deviceProperties.find(busObjectPath.c_str());
+    //if (val != m_deviceProperties.end())
+    //{
+    //    adapterProperty = val->second->GetAdapterProperty();
+    //}
 
     return adapterProperty;
 }
@@ -838,14 +903,15 @@ std::string BridgeDevice::GetBusObjectPath(_In_ IAdapterProperty ^adapterPropert
 {
     std::string busObjectPath;
 
+    throw; //TODO
     // find exposed bus object path from IAdapterProperty
-    for (auto val : m_deviceProperties)
+    /*for (auto val : m_deviceProperties)
     {
         if (val.second->GetAdapterProperty() == adapterProperty)
         {
             busObjectPath = *(val.second->GetPathName());
         }
-    }
+    }*/
     return busObjectPath;
 }
 

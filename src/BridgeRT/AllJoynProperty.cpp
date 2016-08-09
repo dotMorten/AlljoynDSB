@@ -20,6 +20,7 @@
 
 #include "AllJoynProperty.h"
 #include "PropertyInterface.h"
+#include "DeviceInterface.h"
 #include "AllJoynHelper.h"
 
 using namespace BridgeRT;
@@ -39,8 +40,7 @@ AllJoynProperty::AllJoynProperty()
 AllJoynProperty::~AllJoynProperty()
 {
 }
-
-QStatus AllJoynProperty::Create(IAdapterAttribute ^adapterAttribute, PropertyInterface *parent)
+QStatus AllJoynProperty::Create(IAdapterAttribute ^adapterAttribute, DeviceInterface *parent)
 {
     QStatus status = ER_OK;
 
@@ -116,7 +116,7 @@ QStatus AllJoynProperty::SetName(Platform::String ^name)
     }
 
     AllJoynHelper::EncodePropertyOrMethodOrSignalName(name, m_exposedName);
-    if (!m_parent->IsAJPropertyNameUnique(m_exposedName))
+    if (!m_parent->IsAJNameUnique(m_exposedName))
     {
         // append unique id
         std::ostringstream tempString;

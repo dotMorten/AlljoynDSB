@@ -29,18 +29,21 @@ namespace BridgeRT
         PropertyInterface();
         virtual ~PropertyInterface();
 
-        QStatus Create(_In_ IAdapterProperty ^adapterProperty, _In_ std::string &name, _In_ BridgeDevice ^device);
+        QStatus Create(_In_ IAdapterProperty ^adapterProperty, _In_ DeviceInterface *iface, _In_ BridgeDevice ^device);
         bool InterfaceMatchWithAdapterProperty(_In_ IAdapterProperty ^adapterProperty);
 
-        inline alljoyn_interfacedescription GetInterfaceDescription()
+        // inline alljoyn_interfacedescription GetInterfaceDescription()
+        // {
+        //     return m_interfaceDescription;
+        // }
+        // inline std::string *GetInterfaceName()
+        // {
+        //     return &m_interfaceName;
+        // }
+        inline DeviceInterface* GetInterface()
         {
-            return m_interfaceDescription;
+            return m_interface;
         }
-        inline std::string *GetInterfaceName()
-        {
-            return &m_interfaceName;
-        }
-
         bool IsAJPropertyNameUnique(_In_ std::string name);
         inline DWORD GetIndexForAJProperty()
         {
@@ -54,10 +57,11 @@ namespace BridgeRT
 
     private:
         // alljoyn related
-        alljoyn_interfacedescription m_interfaceDescription;
-        std::string m_interfaceName;
+        // alljoyn_interfacedescription m_interfaceDescription;
+        // std::string m_interfaceName;
         std::vector<AllJoynProperty *> m_AJProperties;
 
+        DeviceInterface* m_interface;
         DWORD m_indexForAJProperty;
     };
 }

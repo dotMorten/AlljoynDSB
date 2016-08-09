@@ -150,7 +150,6 @@ namespace BridgeRT
         }
     };
 
-
     //
     // IAdapterProperty interface.
     // Description:
@@ -160,12 +159,6 @@ namespace BridgeRT
     {
         // Object name
         property Platform::String^ Name
-        {
-            Platform::String^ get();
-        }
-
-        // hint for the interface name
-        property Platform::String^ InterfaceHint
         {
             Platform::String^ get();
         }
@@ -283,8 +276,45 @@ namespace BridgeRT
 
     };
 
+    public interface class IAdapterInterface
+    {
+        // Interface name
+        property Platform::String^ Name
+        {
+            Platform::String^ get();
+        }
 
+        // Device properties
+        property IAdapterProperty^ Properties
+        {
+            IAdapterProperty^ get();
+        }
 
+        // Device methods
+        property IAdapterMethodVector^ Methods
+        {
+            IAdapterMethodVector^ get();
+        }
+
+        // Device signals
+        property IAdapterSignalVector^ Signals
+        {
+            IAdapterSignalVector^ get();
+        }
+    };
+
+    public interface class IAdapterBusObject
+    {
+        property Platform::String^ ObjectPath
+        {
+            Platform::String^ get();
+        }
+
+        property IAdapterInterfaceVector^ Interfaces
+        {
+            IAdapterInterfaceVector^ get();
+        }
+    };
     //
     // IAdapterDevice interface.
     // Description:
@@ -324,6 +354,11 @@ namespace BridgeRT
         property Platform::String^ Description
         {
             Platform::String^ get();
+        }
+
+        property IAdapterBusObjectVector^ BusObjects
+        {
+            IAdapterBusObjectVector^ get();
         }
 
         // Device properties

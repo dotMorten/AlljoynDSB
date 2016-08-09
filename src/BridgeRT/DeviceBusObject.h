@@ -22,19 +22,13 @@ namespace BridgeRT
     class PropertyInterface;
     class AllJoynProperty;
 
-    typedef struct
-    {
-        AllJoynProperty *ajProperty;
-        IAdapterAttribute ^adapterAttr;
-    } AJpropertyAdapterValuePair;
-
-    class DeviceProperty
+    class DeviceBusObject
     {
     public:
-        DeviceProperty();
-        virtual ~DeviceProperty();
+        DeviceBusObject();
+        virtual ~DeviceBusObject();
 
-        QStatus Initialize(_In_ IAdapterProperty ^deviceProperty, _In_ PropertyInterface *propertyInterface, _In_ BridgeDevice ^parent);
+        QStatus Initialize(_In_ IAdapterBusObject^ busObject, _In_ BridgeDevice ^parent);
         void Shutdown();
         void EmitSignalCOV(_In_ IAdapterValue ^newValue, const std::vector<alljoyn_sessionid>& sessionIds);
 
@@ -46,21 +40,13 @@ namespace BridgeRT
         {
             return m_AJBusObject;
         }
-        inline PropertyInterface *GetPropertyInterface()
+        std::map<std::string, DeviceInterface *> GetInterfaces()
         {
-            return m_propertyInterface;
-        }
-        inline IAdapterProperty ^GetAdapterProperty()
-        {
-            return m_deviceProperty;
-        }
-        std::map<std::string, AJpropertyAdapterValuePair> GetAJpropertyAdapterValuePairs()
-        {
-            return m_AJpropertyAdapterValuePairs;
+            return m_interfaces;
         }
 
     private:
-        QStatus PairAjProperties();
+        // QStatus PairAjProperties();
 
         static QStatus AJ_CALL GetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _Out_ alljoyn_msgarg val);
         static QStatus AJ_CALL SetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _In_ alljoyn_msgarg val);
@@ -68,18 +54,11 @@ namespace BridgeRT
         // parent class
         BridgeDevice ^m_parent;
 
-        // device property
-        IAdapterProperty ^m_deviceProperty;
-
         // AllJoyn related
         alljoyn_busobject m_AJBusObject;
-        PropertyInterface *m_propertyInterface;
         bool m_registeredOnAllJoyn;
 
-        // store association of each bus interface property exposed on AllJoyn by this bus object
-        // with its corresponding device instance (adapter value)
-        std::map<std::string, AJpropertyAdapterValuePair> m_AJpropertyAdapterValuePairs;
-
+        std::map<std::string, DeviceInterface *> m_interfaces;
         std::string m_AJBusObjectPath;
     };
 }
