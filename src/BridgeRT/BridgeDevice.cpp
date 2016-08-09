@@ -50,7 +50,7 @@ BridgeDevice::BridgeDevice()
     m_AJBusListener(NULL),
     m_AJSessionPortListener(NULL),
     m_uniqueIdForInterfaces(FIRST_UNIQUE_ID),
-    m_deviceMain(nullptr),
+    //m_deviceMain(nullptr),
     m_supportCOVSignal(false),
     m_pLightingService(nullptr)
 {
@@ -119,23 +119,23 @@ QStatus BridgeDevice::Initialize(IAdapterDevice ^device)
 
     // create device properties
     //status = CreateDeviceProperties();
-    if (ER_OK != status)
-    {
-        goto leave;
-    }
+    // if (ER_OK != status)
+    // {
+    //     goto leave;
+    // }
 
     // create main device
-    m_deviceMain = new(std::nothrow) DeviceMain();
-    if (nullptr == m_deviceMain)
-    {
-        status = ER_OUT_OF_MEMORY;
-        goto leave;
-    }
-    status = m_deviceMain->Initialize(this);
-    if (ER_OK != status)
-    {
-        goto leave;
-    }
+    // m_deviceMain = new(std::nothrow) DeviceMain();
+    // if (nullptr == m_deviceMain)
+    // {
+    //     status = ER_OUT_OF_MEMORY;
+    //     goto leave;
+    // }
+    // status = m_deviceMain->Initialize(this);
+    // if (ER_OK != status)
+    // {
+    //     goto leave;
+    // }
 
     // Create a control panel if requested by the caller.
     status = InitControlPanel();
@@ -151,7 +151,7 @@ QStatus BridgeDevice::Initialize(IAdapterDevice ^device)
         goto leave;
     }
 
-    m_about.AddObject(m_deviceMain->GetBusObject(), m_deviceMain->GetInterfaceDescription());
+    // m_about.AddObject(m_deviceMain->GetBusObject(), m_deviceMain->GetInterfaceDescription());
 
     // connect to AllJoyn
     status = ConnectToAllJoyn();
@@ -216,11 +216,11 @@ void BridgeDevice::Shutdown()
     m_deviceBusObjects.clear();
 
     // shutdown main device interface
-    if (nullptr != m_deviceMain)
-    {
-        delete m_deviceMain;
-        m_deviceMain = nullptr;
-    }
+    // if (nullptr != m_deviceMain)
+    // {
+    //     delete m_deviceMain;
+    //     m_deviceMain = nullptr;
+    // }
 
     // shutdown AllJoyn
     ShutdownAllJoyn();
@@ -848,7 +848,9 @@ void BridgeDevice::AdapterSignalHandler(IAdapterSignal ^Signal, Platform::Object
     }
     else
     {
-        m_deviceMain->HandleSignal(Signal);
+        // TODO: find signal on busobjects
+        throw;
+        // m_deviceMain->HandleSignal(Signal);
     }
 }
 

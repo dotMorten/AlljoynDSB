@@ -69,10 +69,10 @@ namespace BridgeRT
         {
             return m_RootStringForAllJoynNames;
         }
-        inline DeviceMain *GetDeviceMainObject()
-        {
-            return m_deviceMain;
-        }
+        // inline DeviceMain *GetDeviceMainObject()
+        // {
+        //     return m_deviceMain;
+        // }
         inline bool IsCOVSupported()
         {
             return m_supportCOVSignal;
@@ -122,7 +122,7 @@ namespace BridgeRT
 
         // main interface
         // that handles methods and signals defined at IAdapterDevice level
-        DeviceMain *m_deviceMain;
+        // DeviceMain *m_deviceMain;
 
         // authentication management
         BridgeAuthHandler m_authHandler;

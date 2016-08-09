@@ -294,7 +294,7 @@ DeviceMain *DeviceMain::GetInstance(_In_ alljoyn_busobject busObject)
     auto deviceList = DsbBridge::SingleInstance()->GetDeviceList();
     for (auto device : deviceList)
     {
-        objectPointer = device.second->GetDeviceMainObject();
+       /* objectPointer = device.second->GetDeviceMainObject();
         if (objectPointer != nullptr &&
             objectPointer->GetBusObject() == busObject)
         {
@@ -303,7 +303,7 @@ DeviceMain *DeviceMain::GetInstance(_In_ alljoyn_busobject busObject)
         else
         {
             objectPointer = nullptr;
-        }
+        }*/
     }
 
     return objectPointer;
