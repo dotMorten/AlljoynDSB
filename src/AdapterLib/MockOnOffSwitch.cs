@@ -20,7 +20,7 @@ namespace AdapterLib
             base(name, "MockDevices Inc", "Mock Switch", "1", id, "")
         {
             _bridge = bridge;
-            _interfaceOnOff = CreateOnOffInterface("SmartSpaces", isOn);
+            _interfaceOnOff = CreateOnOffInterface(isOn);
             _interfaceOn = CreateOnInterface(isOn);
             _interfaceOff = CreateOffInterface(!isOn);
             AdapterBusObject abo = new AdapterBusObject("org/alljoyn/SmartSpaces/Operation");
@@ -52,7 +52,7 @@ namespace AdapterLib
         private IAdapterInterface CreateOnInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnControl");
-            AdapterProperty property = new AdapterProperty("abc");
+            AdapterProperty property = new AdapterProperty();
             property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
             property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             iface.Properties = property;
@@ -83,7 +83,7 @@ namespace AdapterLib
         private IAdapterInterface CreateOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OffControl");
-            AdapterProperty property = new AdapterProperty("abc");
+            AdapterProperty property = new AdapterProperty();
             property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
             property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             iface.Properties = property;
@@ -97,6 +97,7 @@ namespace AdapterLib
             iface.Methods.Add(m);
             return iface;
         }
+
         /*
             </interface>
             <interface name="org.alljoyn.SmartSpaces.Operation.OnOffStatus">
@@ -115,7 +116,7 @@ namespace AdapterLib
         private static IAdapterInterface CreateOnOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnOffStatus");
-            var property = new AdapterProperty("abc");
+            var property = new AdapterProperty();
             property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
             property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             property.Attributes.Add(new AdapterAttribute("OnOff", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });

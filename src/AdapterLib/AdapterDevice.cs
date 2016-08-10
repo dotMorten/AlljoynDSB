@@ -64,10 +64,8 @@ namespace AdapterLib
         public string Name { get; }
         public IList<IAdapterAttribute> Attributes { get; }
 
-        internal AdapterProperty(string name)
+        internal AdapterProperty()
         {
-            this.Name = name;
-
             try
             {
                 this.Attributes = new List<IAdapterAttribute>();
@@ -80,13 +78,11 @@ namespace AdapterLib
 
         internal AdapterProperty(AdapterProperty Other)
         {
-            this.Name = Other.Name;
-
             try
             {
                 this.Attributes = new List<IAdapterAttribute>(Other.Attributes);
             }
-            catch (OutOfMemoryException ex)
+            catch (OutOfMemoryException)
             {
                 throw;
             }

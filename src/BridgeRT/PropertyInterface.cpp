@@ -59,11 +59,6 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, DeviceInter
         status = ER_BAD_ARG_1;
         goto leave;
     }
-    if (0 == adapterProperty->Name->Length())
-    {
-        status = ER_BAD_ARG_2;
-        goto leave;
-    }
     if (nullptr == device)
     {
         status = ER_BAD_ARG_3;

@@ -157,12 +157,6 @@ namespace BridgeRT
     //
     public interface class IAdapterProperty
     {
-        // Object name
-        property Platform::String^ Name
-        {
-            Platform::String^ get();
-        }
-
         // The bag of attributes
         property IAdapterAttributeVector^ Attributes
         {

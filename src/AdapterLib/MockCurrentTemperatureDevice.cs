@@ -35,7 +35,7 @@ namespace AdapterLib
     public sealed class MockCurrentTemperatureDevice : AdapterDevice, INotifyPropertyChanged
     {
         private Adapter _bridge;
-        private IAdapterProperty _property;
+        private IAdapterInterface _iface;
         private double _currentValue;
         private System.Threading.CancellationTokenSource _updateToken;
 
@@ -43,22 +43,24 @@ namespace AdapterLib
             base(name, "MockDevices Inc", "Mock Temperature", "1", id, "")
         {
             _bridge = bridge;
-            _property = CreateInterface("Temperature", currentTemperature);
-            Properties.Add(_property);
+            _iface = CreateInterface(currentTemperature);
+            BusObjects.Add(new AdapterBusObject("org.alljoyn.SmartSpaces.Environment"));
+            BusObjects[0].Interfaces.Add(_iface);
             CreateEmitSignalChangedSignal();
             _currentValue = currentTemperature;
         }
 
-        private static IAdapterProperty CreateInterface(string objectPath, double currentValue)
+        private static IAdapterInterface CreateInterface(double currentValue)
         {
-            //, "org.alljoyn.SmartSpaces.Environment.CurrentTemperature"
-            AdapterProperty property = new AdapterProperty(objectPath);
+            AdapterInterface iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentTemperature");
+            AdapterProperty property = new AdapterProperty();
             property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
             property.Attributes.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
             property.Attributes[1].Annotations.Add("org.alljoyn.Bus.Type.Units", "degrees Celcius");
             property.Attributes.Add(new AdapterAttribute("Precision", 0.1d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
             property.Attributes.Add(new AdapterAttribute("UpdateMinTime", (ushort)1000, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            return property;
+            iface.Properties = property;
+            return iface;
         }
 
         private void CreateEmitSignalChangedSignal()
@@ -91,11 +93,11 @@ namespace AdapterLib
 
         private void UpdateValue(double value)
         {
-            var attr = _property.Attributes.Where(a => a.Value.Name == "CurrentValue").First();
+            var attr = _iface.Properties.Attributes.Where(a => a.Value.Name == "CurrentValue").First();
             if (attr.Value.Data != (object)value)
             {
                 attr.Value.Data = value;
-                _bridge.SignalChangeOfAttributeValue(this, _property, attr);
+                _bridge.SignalChangeOfAttributeValue(this, _iface.Properties, attr);
             }
         }
 

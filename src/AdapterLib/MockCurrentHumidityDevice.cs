@@ -30,7 +30,7 @@ namespace AdapterLib
     public sealed class MockCurrentHumidityDevice : AdapterDevice, INotifyPropertyChanged
     {
         private Adapter _bridge;
-        private IAdapterProperty _property;
+        private IAdapterInterface _iface;
         private double _currentValue;
         private System.Threading.CancellationTokenSource _updateToken;
 
@@ -38,15 +38,16 @@ namespace AdapterLib
             base(name, "MockDevices Inc", "Mock Humidity", "1", id, "")
         {
             _bridge = bridge;
-            _property = CreateInterface("Humidity", currentHumidity);
-            Properties.Add(_property);
+            _iface = CreateInterface("Humidity", currentHumidity);
+            BusObjects.Add(new AdapterBusObject("org.alljoyn.SmartSpaces.Environment"));
+            BusObjects[0].Interfaces.Add(_iface);
             CreateEmitSignalChangedSignal();
             CurrentValue = currentHumidity;
         }
-        private static IAdapterProperty CreateInterface(string objectPath, double currentValue)
+        private static IAdapterInterface CreateInterface(string objectPath, double currentValue)
         {
-            //, "org.alljoyn.SmartSpaces.Environment.CurrentHumidity"
-            AdapterProperty property = new AdapterProperty(objectPath);
+            var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentHumidity");
+            AdapterProperty property = new AdapterProperty();
             property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
             property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             property.Attributes.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
@@ -54,7 +55,8 @@ namespace AdapterLib
             property.Attributes[1].Annotations.Add("org.alljoyn.Bus.Type.Min", "0");
             property.Attributes.Add(new AdapterAttribute("MaxValue", 100d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
             property.Attributes[2].Annotations.Add("org.alljoyn.Bus.DocString.En", "Maximum value allowed for represented relative humidity");
-            return property;
+            iface.Properties = property;
+            return iface;
         }
 
         private void CreateEmitSignalChangedSignal()
@@ -87,11 +89,11 @@ namespace AdapterLib
 
         public void UpdateValue(double value)
         {
-            var attr = _property.Attributes.Where(a => a.Value.Name == "CurrentValue").First();
+            var attr = _iface.Properties.Attributes.Where(a => a.Value.Name == "CurrentValue").First();
             if (attr.Value.Data != (object)value)
             {
                 attr.Value.Data = value;
-                _bridge.SignalChangeOfAttributeValue(this, _property, attr);
+                _bridge.SignalChangeOfAttributeValue(this, _iface.Properties, attr);
             }
         }
 
