@@ -93,6 +93,7 @@
     <Compile Include="AdapterDevice.cs" />
     <Compile Include="AdapterSignal.cs" />
     <Compile Include="AdapterIcon.cs" />
+    <Compile Include="AllJoynDsbServiceManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

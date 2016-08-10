@@ -11,31 +11,39 @@ using Windows.Devices.AllJoyn;
 using Windows.Foundation;
 using Windows.System.Threading;
 
-namespace TestApp
+namespace AdapterLib
 {
-    public class AllJoynDeviceManager
+    public sealed class AllJoynDsbServiceManager
     {
-        private static AllJoynDeviceManager instance;
+        private static AllJoynDsbServiceManager instance;
+        private Adapter adapter;
+        private DsbBridge dsbBridge;
 
-        public static AllJoynDeviceManager Current
+        public static AllJoynDsbServiceManager Current
         {
             get
             {
                 if (instance == null)
-                    instance = new AllJoynDeviceManager();
+                    instance = new AllJoynDsbServiceManager();
                 return instance;
             }
         }
 
-        private Adapter adapter;
-        public Adapter DsbAdapter { get { return adapter; } }
-
-        public DsbBridge dsbBridge { get; private set; }
-
         public Task StartupTask { get; private set; }
+
+        public ServiceState State { get; private set; } = ServiceState.Stopped;
+
+        public enum ServiceState
+        {
+            Stopped,
+            Starting,
+            Running,
+            Stopping
+        }
 
         public async Task Shutdown()
         {
+            State = ServiceState.Stopping;
             foreach (var device in Devices.ToArray())
                 RemoveDevice(device);
             await Task.Delay(1000); //Give it some time to announce devices lost
@@ -47,13 +55,15 @@ namespace TestApp
             adapter = null;
             instance = null;
             await Task.Delay(1000); //Give it some time to announce DSB lost
+            State = ServiceState.Stopped;
         }
 
-        private AllJoynDeviceManager()
+        private AllJoynDsbServiceManager()
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             StartupTask = ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction action) =>
             {
+                State = ServiceState.Starting;
                 try
                 {
                     adapter = new Adapter();
@@ -64,9 +74,11 @@ namespace TestApp
                     {
                         throw new Exception("DSB Bridge initialization failed!");
                     }
+                    State = ServiceState.Running;
                 }
                 catch (Exception)
                 {
+                    State = ServiceState.Stopped;
                     throw;
                 }
             })).AsTask();
@@ -74,15 +86,17 @@ namespace TestApp
         
         public void AddDevice(IAdapterDevice device)
         {
-            _Devices.Add(device);
+            if (State != ServiceState.Running)
+                throw new InvalidOperationException("Service is not running");
             adapter.AddDevice((IAdapterDevice)device);
+            _Devices.Add(device);
         }
         public void RemoveDevice(IAdapterDevice device)
         {
-            _Devices.Remove(device);
             adapter.RemoveDevice((IAdapterDevice)device);
+            _Devices.Remove(device);
         }
-        
+
         private ObservableCollection<IAdapterDevice> _Devices = new ObservableCollection<IAdapterDevice>();
 
         public IEnumerable<IAdapterDevice> Devices { get { return _Devices; } }

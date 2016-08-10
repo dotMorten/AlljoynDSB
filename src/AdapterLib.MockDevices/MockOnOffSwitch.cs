@@ -21,7 +21,7 @@ namespace AdapterLib.MockDevices
             _interfaceOnOff = CreateOnOffInterface(isOn);
             _interfaceOn = CreateOnInterface(isOn);
             _interfaceOff = CreateOffInterface(!isOn);
-            AdapterBusObject abo = new AdapterBusObject("org/alljoyn/SmartSpaces/Operation");
+            AdapterBusObject abo = new AdapterBusObject("org/alljoyn/SmartSpaces/Operation/Switch");
             abo.Interfaces.Add(_interfaceOnOff);
             abo.Interfaces.Add(_interfaceOn);
             abo.Interfaces.Add(_interfaceOff);

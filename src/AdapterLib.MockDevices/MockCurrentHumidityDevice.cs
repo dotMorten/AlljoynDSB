@@ -29,15 +29,13 @@ namespace AdapterLib.MockDevices
 {
     public sealed class MockCurrentHumidityDevice : AdapterDevice, INotifyPropertyChanged
     {
-        private Adapter _bridge;
         private IAdapterInterface _iface;
         private double _currentValue;
         private System.Threading.CancellationTokenSource _updateToken;
 
-        public MockCurrentHumidityDevice(Adapter bridge, string name, string id, double currentHumidity) :
+        public MockCurrentHumidityDevice(string name, string id, double currentHumidity) :
             base(name, "MockDevices Inc", "Mock Humidity", "1", id, "")
         {
-            _bridge = bridge;
             _iface = CreateInterface("Humidity", currentHumidity);
             BusObjects.Add(new AdapterBusObject("org.alljoyn.SmartSpaces.Environment"));
             BusObjects[0].Interfaces.Add(_iface);

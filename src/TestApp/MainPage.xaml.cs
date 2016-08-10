@@ -38,7 +38,7 @@ namespace TestApp
             {
                 this.DataContext = null;
                 var d = e.SuspendingOperation.GetDeferral();
-                await AllJoynDeviceManager.Current.Shutdown();
+                await AllJoynDsbServiceManager.Current.Shutdown();
                 d.Complete();
             }
         }
@@ -53,20 +53,22 @@ namespace TestApp
             status.Text = "Starting up bridge...";
             try
             {
-                await AllJoynDeviceManager.Current.StartupTask;
-                status.Text = ""; // Bridge Successfully Initialized
+                await AllJoynDsbServiceManager.Current.StartupTask;
+                status.Text = "Bridge Running"; // Bridge Successfully Initialized
+                LoadDevices();
             }
             catch (System.Exception ex)
             {
                 status.Text = "Bridge failed to initialize:\n" + ex.Message;
-                return;
             }
-            LoadDevices();
         }
 
         private void LoadDevices()
         {
-            AllJoynDeviceManager.Current.AddDevice(new MockOnOffSwitchDevice("Mock Switch", Guid.NewGuid().ToString(), false));
+            AllJoynDsbServiceManager.Current.AddDevice(new MockOnOffSwitchDevice("Mock Switch", Guid.NewGuid().ToString(), false));
+            AllJoynDsbServiceManager.Current.AddDevice(new MockCurrentHumidityDevice("Mock Humidity", Guid.NewGuid().ToString(), 50));
+            AllJoynDsbServiceManager.Current.AddDevice(new MockCurrentTemperatureDevice("Mock Temperature", Guid.NewGuid().ToString(), 25));
+            AllJoynDsbServiceManager.Current.AddDevice(new MockBulbDevice(new MockLightingServiceHandler("Mock Light", Guid.NewGuid().ToString(), true, true, true, Dispatcher)));
         }
     }
 }

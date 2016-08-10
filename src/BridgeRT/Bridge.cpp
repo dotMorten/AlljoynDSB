@@ -456,7 +456,7 @@ DsbBridge::AdapterSignalHandler(
             if (bUpdateXml)
             {
                 AutoLock bridgeLocker(this->m_bridgeLock);
-                m_configManager.ToFile();
+                // m_configManager.ToFile();
             }
         }
         catch (...)

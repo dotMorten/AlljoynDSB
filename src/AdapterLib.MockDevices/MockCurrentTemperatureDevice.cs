@@ -34,15 +34,13 @@ namespace AdapterLib.MockDevices
 {
     public sealed class MockCurrentTemperatureDevice : AdapterDevice, INotifyPropertyChanged
     {
-        private Adapter _bridge;
         private IAdapterInterface _iface;
         private double _currentValue;
         private System.Threading.CancellationTokenSource _updateToken;
 
-        public MockCurrentTemperatureDevice(Adapter bridge, string name, string id, double currentTemperature) : 
+        public MockCurrentTemperatureDevice(string name, string id, double currentTemperature) : 
             base(name, "MockDevices Inc", "Mock Temperature", "1", id, "")
         {
-            _bridge = bridge;
             _iface = CreateInterface(currentTemperature);
             BusObjects.Add(new AdapterBusObject("org.alljoyn.SmartSpaces.Environment"));
             BusObjects[0].Interfaces.Add(_iface);
