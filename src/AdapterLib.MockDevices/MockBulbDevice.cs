@@ -23,17 +23,17 @@
 * DEALINGS IN THE SOFTWARE.  
 */
 
-namespace AdapterLib
+using System;
+
+namespace AdapterLib.MockDevices
 {
-    internal class MockBulbDevice : AdapterDevice
+    public class MockBulbDevice : AdapterDevice
     {
-        static int id = 0;
         public MockBulbDevice(MockLightingServiceHandler handler) : base(handler.Name,
             "MockDevices Inc", "Mock Bulb", "1", handler.Id, "")
         {
             base.LightingServiceHandler = handler;
-            Icon = new AdapterIcon("ms-appx:///AdapterLib/Icons/Light.png");
+            Icon = new AdapterIcon(new Uri("ms-appx:///AdapterLib/Icons/Light.png"));
         }
-
     }
 }

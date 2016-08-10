@@ -25,7 +25,7 @@ using System.ComponentModel;
     </property>
 </interface>
 */
-namespace AdapterLib
+namespace AdapterLib.MockDevices
 {
     public sealed class MockCurrentHumidityDevice : AdapterDevice, INotifyPropertyChanged
     {
@@ -91,7 +91,7 @@ namespace AdapterLib
             if (attr.Value.Data != (object)value)
             {
                 attr.Value.Data = value;
-                _bridge.SignalChangeOfAttributeValue(this, _iface.Properties, attr);
+                base.SignalChangeOfAttributeValue(_iface, attr);
             }
         }
 

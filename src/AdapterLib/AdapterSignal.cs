@@ -30,12 +30,12 @@ using System.Diagnostics;
 
 namespace AdapterLib
 {
-    class SignalParameter : IAdapterValue
+    public sealed class SignalParameter : IAdapterValue
     {
         public object Data { get; set; }
         public string Name { get; }
 
-        internal SignalParameter(string name)
+        public SignalParameter(string name)
         {
             Name = name;
             Data = null;
@@ -46,14 +46,14 @@ namespace AdapterLib
     // Description:
     // The class that implements IAdapterSignal from BridgeRT.
     //
-    class AdapterSignal : IAdapterSignal
+    public sealed class AdapterSignal : IAdapterSignal
     {
         // public properties
         public string Name { get; }
 
         public IList<IAdapterValue> Params { get; }
 
-        internal AdapterSignal(string signalName)
+        public AdapterSignal(string signalName)
         {
             this.Name = signalName;
 

@@ -32,14 +32,14 @@ using BridgeRT;
 
 namespace AdapterLib
 {
-    internal class AdapterIcon : BridgeRT.IAdapterIcon
+    public sealed class AdapterIcon : BridgeRT.IAdapterIcon
     {
         byte[] _image = null;
-        public AdapterIcon(string url)
+        public AdapterIcon(Uri uri)
         {
-            if (url.StartsWith("ms-appx:///"))
+            if(uri.Scheme == "ms-appx")
             {
-                var s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(url)).OpenReadAsync().AsTask();
+                var s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(uri).OpenReadAsync().AsTask();
                 s.Wait();
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -49,7 +49,7 @@ namespace AdapterLib
             }
             else
             {
-                Url = url;
+                Url = uri.OriginalString;
             }
         }
 

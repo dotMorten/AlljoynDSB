@@ -104,6 +104,12 @@ namespace AdapterLib
 
         public void AddDevice(IAdapterDevice device)
         {
+            if (device is AdapterDevice)
+            {
+                if (((AdapterDevice)device).Parent != null)
+                    throw new InvalidOperationException("Device has already been added to an adapter");
+                ((AdapterDevice)device).Parent = this;
+            }
             this.devices.Add(device);
             this.NotifyDeviceArrival(device);
         }
@@ -111,23 +117,11 @@ namespace AdapterLib
         public void RemoveDevice(IAdapterDevice device)
         {
             this.devices.Remove(device);
-            this.NotifyDeviceRemoval(device);
-        }
-        public void AddBulb(MockLightingServiceHandler handler)
-        {
-            var bulb = new MockBulbDevice(handler);
-            this.devices.Add(bulb);
-            this.NotifyDeviceArrival(bulb);
-        }
-        public void RemoveBulb(MockLightingServiceHandler handler)
-        {
-            
-            var bulb = this.devices.OfType<AdapterDevice>().Where(d => d.LightingServiceHandler == handler).FirstOrDefault();
-            if(bulb != null)
+            if (device is AdapterDevice)
             {
-                this.devices.Remove(bulb);
-                this.NotifyDeviceRemoval(bulb);
+                ((AdapterDevice)device).Parent = null;
             }
+            this.NotifyDeviceRemoval(device);
         }
 
         public uint SetConfiguration([ReadOnlyArray] byte[] ConfigurationData)

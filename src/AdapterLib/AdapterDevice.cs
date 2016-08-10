@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 using BridgeRT;
+using System.Linq;
 
 namespace AdapterLib
 {
@@ -34,13 +35,13 @@ namespace AdapterLib
     // Description:
     // The class that implements IAdapterValue from BridgeRT.
     //
-    class AdapterValue : IAdapterValue
+    public sealed class AdapterValue : IAdapterValue
     {
         // public properties
         public string Name { get; }
         public object Data { get; set; }
 
-        internal AdapterValue(string ObjectName, object DefaultData)
+        public AdapterValue(string ObjectName, object DefaultData)
         {
             this.Name = ObjectName;
             this.Data = DefaultData;
@@ -59,7 +60,7 @@ namespace AdapterLib
     // Description:
     // The class that implements IAdapterAttribute from BridgeRT.
     //
-    class AdapterAttribute : IAdapterAttribute
+    public sealed class AdapterAttribute : IAdapterAttribute
     {
         // public properties
         public IAdapterValue Value { get; }
@@ -68,7 +69,7 @@ namespace AdapterLib
         public IDictionary<string, string> Annotations { get; }
         public SignalBehavior COVBehavior { get; set; }
 
-        internal AdapterAttribute(string ObjectName, object DefaultData, E_ACCESS_TYPE access = E_ACCESS_TYPE.ACCESS_READ)
+        public AdapterAttribute(string ObjectName, object DefaultData, E_ACCESS_TYPE access = E_ACCESS_TYPE.ACCESS_READ)
         {
             try
             {
@@ -97,7 +98,7 @@ namespace AdapterLib
     // Description:
     // The class that implements IAdapterMethod from BridgeRT.
     //
-    class AdapterMethod : IAdapterMethod
+    public sealed class AdapterMethod : IAdapterMethod
     {
         // public properties
         public string Name { get; }
@@ -110,15 +111,17 @@ namespace AdapterLib
 
         public int HResult { get; private set; }
 
-        internal AdapterMethod(
+        public AdapterMethod(
             string ObjectName,
             string Description,
-            int ReturnValue)
+            int ReturnValue, Func<int> invokeAction)
         {
             this.Name = ObjectName;
             this.Description = Description;
             this.HResult = ReturnValue;
-
+            if(invokeAction == null)
+                throw new ArgumentNullException(nameof(invokeAction));
+            this.InvokeAction = () => { SetResult(invokeAction()); };
             try
             {
                 this.InputParams = new List<IAdapterValue>();
@@ -146,14 +149,14 @@ namespace AdapterLib
                 throw;
             }
         }
-
+        
         internal void SetResult(int ReturnValue)
         {
             this.HResult = ReturnValue;
         }
-        internal Action InvokeAction { get; set; }
+        internal Action InvokeAction { get; }
 
-        internal protected void Invoke()
+        internal void Invoke()
         {
             if(InvokeAction != null)
             {
@@ -288,7 +291,7 @@ namespace AdapterLib
         }
 
 
-        internal AdapterDevice(
+        protected AdapterDevice(
             string Name,
             string VendorName,
             string Model,
@@ -339,6 +342,15 @@ namespace AdapterLib
             }
         }
 
+        protected void CreateEmitSignalChangedSignal()
+        {
+            // change of value signal
+            AdapterSignal changeOfAttributeValue = new AdapterSignal(Constants.CHANGE_OF_VALUE_SIGNAL);
+            changeOfAttributeValue.Params.Add(new AdapterValue(Constants.COV__PROPERTY_HANDLE, null));
+            changeOfAttributeValue.Params.Add(new AdapterValue(Constants.COV__ATTRIBUTE_HANDLE, null));
+            Signals.Add(changeOfAttributeValue);
+        }
+
         internal void AddChangeOfValueSignal(
             IAdapterProperty Property,
             IAdapterValue Attribute)
@@ -367,5 +379,15 @@ namespace AdapterLib
                 throw;
             }
         }
+        protected void SignalChangeOfAttributeValue(IAdapterInterface iface, IAdapterAttribute property)
+        {
+            Parent?.SignalChangeOfAttributeValue(this, iface.Properties, property);
+        }
+        protected void NotifySignalListener(IAdapterSignal signal)
+        {
+            Parent?.NotifySignalListener(signal);
+        }
+
+        internal Adapter Parent { get; set; }
     }
 }

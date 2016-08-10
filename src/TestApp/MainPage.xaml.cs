@@ -1,4 +1,5 @@
 ﻿using AdapterLib;
+using AdapterLib.MockDevices;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,7 +66,7 @@ namespace TestApp
 
         private void LoadDevices()
         {
-            AllJoynDeviceManager.Current.AddDevice(new MockOnOffSwitchDevice(AllJoynDeviceManager.Current.DsbAdapter, "Mock Switch", Guid.NewGuid().ToString(), false));
+            AllJoynDeviceManager.Current.AddDevice(new MockOnOffSwitchDevice("Mock Switch", Guid.NewGuid().ToString(), false));
         }
     }
 }

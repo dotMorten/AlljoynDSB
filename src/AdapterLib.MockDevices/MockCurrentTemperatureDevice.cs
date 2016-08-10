@@ -30,7 +30,7 @@ using System.ComponentModel;
   </property>
 </interface>*/
 
-namespace AdapterLib
+namespace AdapterLib.MockDevices
 {
     public sealed class MockCurrentTemperatureDevice : AdapterDevice, INotifyPropertyChanged
     {
@@ -95,7 +95,7 @@ namespace AdapterLib
             if (attr.Value.Data != (object)value)
             {
                 attr.Value.Data = value;
-                _bridge.SignalChangeOfAttributeValue(this, _iface.Properties, attr);
+                SignalChangeOfAttributeValue(_iface, attr);
             }
         }
 

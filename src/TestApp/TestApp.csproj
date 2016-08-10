@@ -128,6 +128,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AdapterLib.MockDevices\AdapterLib.MockDevices.csproj">
+      <Project>{43a072e5-e2fb-4eac-9d7e-f51e9eb85083}</Project>
+      <Name>AdapterLib.MockDevices</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AdapterLib\AdapterLib.csproj">
       <Project>{5254f40c-cd4c-48f9-9c55-8040f071f1b4}</Project>
       <Name>AdapterLib</Name>
