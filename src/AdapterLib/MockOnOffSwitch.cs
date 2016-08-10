@@ -52,10 +52,8 @@ namespace AdapterLib
         private IAdapterInterface CreateOnInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnControl");
-            AdapterProperty property = new AdapterProperty();
-            property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
-            property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            iface.Properties = property;
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             var m = new AdapterMethod("SwitchOn", "Switch on the device.", 0);
             m.InvokeAction = () =>
             {
@@ -83,10 +81,8 @@ namespace AdapterLib
         private IAdapterInterface CreateOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OffControl");
-            AdapterProperty property = new AdapterProperty();
-            property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
-            property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            iface.Properties = property;
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             var m = new AdapterMethod("SwitchOff", "Switch off the device.", 0);
             m.InvokeAction = () =>
             {
@@ -116,12 +112,10 @@ namespace AdapterLib
         private static IAdapterInterface CreateOnOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnOffStatus");
-            var property = new AdapterProperty();
-            property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
-            property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            property.Attributes.Add(new AdapterAttribute("OnOff", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            property.Attributes[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current on/off state of the appliance. If true, the device is on state.");
-            iface.Properties = property;
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
+            iface.Properties.Add(new AdapterAttribute("OnOff", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current on/off state of the appliance. If true, the device is on state.");
             // var toggledSignal = new AdapterSignal("SwitchToggled");
             // iface.Signals.Add(toggledSignal);
             return iface;
@@ -154,20 +148,8 @@ namespace AdapterLib
             {
                 attr.Value.Data = value;
                 _bridge.SignalChangeOfAttributeValue(this, _interfaceOnOff.Properties, attr);
-                _bridge.NotifySignalListener(_interfaceOnOff.Signals[0]);
+                //_bridge.NotifySignalListener(_interfaceOnOff.Signals[0]);
             }
-            // attr = _interfaceOn.Properties.Attributes.Where(a => a.Value.Name == "IsOn").First();
-            // if (attr.Value.Data != (object)value)
-            // {
-            //     attr.Value.Data = value;
-            //     _bridge.SignalChangeOfAttributeValue(this, _interfaceOn.Properties, attr);
-            // }
-            // attr = _interfaceOff.Properties.Attributes.Where(a => a.Value.Name == "IsOff").First();
-            // if (attr.Value.Data != (object)value)
-            // {
-            //     attr.Value.Data = !value;
-            //     _bridge.SignalChangeOfAttributeValue(this, _interfaceOff.Properties, attr);
-            // }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

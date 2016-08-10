@@ -53,41 +53,6 @@ namespace AdapterLib
         }
     }
 
-    //
-    // AdapterProperty.
-    // Description:
-    // The class that implements IAdapterProperty from BridgeRT.
-    //
-    class AdapterProperty : IAdapterProperty
-    {
-        // public properties
-        public string Name { get; }
-        public IList<IAdapterAttribute> Attributes { get; }
-
-        internal AdapterProperty()
-        {
-            try
-            {
-                this.Attributes = new List<IAdapterAttribute>();
-            }
-            catch (OutOfMemoryException ex)
-            {
-                throw;
-            }
-        }
-
-        internal AdapterProperty(AdapterProperty Other)
-        {
-            try
-            {
-                this.Attributes = new List<IAdapterAttribute>(Other.Attributes);
-            }
-            catch (OutOfMemoryException)
-            {
-                throw;
-            }
-        }
-    }
 
     //
     // AdapterAttribute.
@@ -218,11 +183,51 @@ namespace AdapterLib
 
         public string Name { get; }
 
-        public IAdapterProperty Properties { get; set; } //= new List<IAdapterProperty>();
+        IAdapterProperty IAdapterInterface.Properties { get; } = new AdapterProperty();
+
+        public IList<IAdapterAttribute> Properties { get { return ((IAdapterInterface)this).Properties.Attributes; } }
 
         public IList<IAdapterMethod> Methods { get; } = new List<IAdapterMethod>();
 
         public IList<IAdapterSignal> Signals { get; } = new List<IAdapterSignal>();
+
+        //
+        // AdapterProperty.
+        // Description:
+        // The class that implements IAdapterProperty from BridgeRT.
+        //
+        private class AdapterProperty : IAdapterProperty
+        {
+            // public properties
+            public string Name { get; }
+            public IList<IAdapterAttribute> Attributes { get; }
+
+            internal AdapterProperty()
+            {
+                try
+                {
+                    this.Attributes = new List<IAdapterAttribute>();
+                }
+                catch (OutOfMemoryException ex)
+                {
+                    throw;
+                }
+            }
+
+            internal AdapterProperty(AdapterProperty Other)
+            {
+                try
+                {
+                    this.Attributes = new List<IAdapterAttribute>(Other.Attributes);
+                }
+                catch (OutOfMemoryException)
+                {
+                    throw;
+                }
+            }
+        }
+
+
     }
 
     //

@@ -47,15 +47,13 @@ namespace AdapterLib
         private static IAdapterInterface CreateInterface(string objectPath, double currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentHumidity");
-            AdapterProperty property = new AdapterProperty();
-            property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
-            property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            property.Attributes.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            property.Attributes[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current relative humidity value");
-            property.Attributes[1].Annotations.Add("org.alljoyn.Bus.Type.Min", "0");
-            property.Attributes.Add(new AdapterAttribute("MaxValue", 100d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            property.Attributes[2].Annotations.Add("org.alljoyn.Bus.DocString.En", "Maximum value allowed for represented relative humidity");
-            iface.Properties = property;
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
+            iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current relative humidity value");
+            iface.Properties[1].Annotations.Add("org.alljoyn.Bus.Type.Min", "0");
+            iface.Properties.Add(new AdapterAttribute("MaxValue", 100d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties[2].Annotations.Add("org.alljoyn.Bus.DocString.En", "Maximum value allowed for represented relative humidity");
             return iface;
         }
 

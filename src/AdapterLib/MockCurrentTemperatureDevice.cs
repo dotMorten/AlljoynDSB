@@ -53,13 +53,11 @@ namespace AdapterLib
         private static IAdapterInterface CreateInterface(double currentValue)
         {
             AdapterInterface iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentTemperature");
-            AdapterProperty property = new AdapterProperty();
-            property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
-            property.Attributes.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            property.Attributes[1].Annotations.Add("org.alljoyn.Bus.Type.Units", "degrees Celcius");
-            property.Attributes.Add(new AdapterAttribute("Precision", 0.1d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            property.Attributes.Add(new AdapterAttribute("UpdateMinTime", (ushort)1000, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            iface.Properties = property;
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties[1].Annotations.Add("org.alljoyn.Bus.Type.Units", "degrees Celcius");
+            iface.Properties.Add(new AdapterAttribute("Precision", 0.1d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("UpdateMinTime", (ushort)1000, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
             return iface;
         }
 

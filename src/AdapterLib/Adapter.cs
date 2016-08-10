@@ -199,7 +199,7 @@ namespace AdapterLib
             RequestPtr = null;
 
             // find corresponding attribute
-            foreach (var attribute in ((AdapterProperty)Property).Attributes)
+            foreach (var attribute in ((IAdapterProperty)Property).Attributes)
             {
                 if (attribute.Value.Name == AttributeName)
                 {
@@ -219,7 +219,7 @@ namespace AdapterLib
             RequestPtr = null;
 
             // find corresponding attribute
-            foreach (var attribute in ((AdapterProperty)Property).Attributes)
+            foreach (var attribute in ((IAdapterProperty)Property).Attributes)
             {
                 if (attribute.Value.Name == Value.Name)
                 {
