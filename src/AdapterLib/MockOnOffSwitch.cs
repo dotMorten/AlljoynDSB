@@ -122,8 +122,8 @@ namespace AdapterLib
             property.Attributes.Add(new AdapterAttribute("OnOff", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
             property.Attributes[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current on/off state of the appliance. If true, the device is on state.");
             iface.Properties = property;
-            var toggledSignal = new AdapterSignal("SwitchToggled");
-            iface.Signals.Add(toggledSignal);
+            // var toggledSignal = new AdapterSignal("SwitchToggled");
+            // iface.Signals.Add(toggledSignal);
             return iface;
         }
 
