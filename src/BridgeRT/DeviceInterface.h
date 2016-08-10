@@ -26,17 +26,26 @@ namespace BridgeRT
     class DeviceProperty;
     class DeviceMethod;
     class DeviceSignal;
+    class PropertyInterface;
+    ref class DeviceInterfaceSignalListener;
 
-    class DeviceInterface
+    class DeviceInterface //: IAdapterSignalListener
     {
     public:
         DeviceInterface();
         virtual ~DeviceInterface();
+
+        // IAdapterSignalListener implementation
+        void AdapterSignalHandler(_In_ IAdapterSignal^ Signal);
+
         void Shutdown();
         QStatus Initialize(_In_ IAdapterInterface^ iface, _In_ DeviceBusObject *parent, _In_ BridgeDevice ^bridge);
         bool InterfaceMatchWithAdapterProperty(_In_ IAdapterProperty ^adapterProperty);
         bool InterfaceMatchWithAdapterMethod(_In_ IAdapterMethod ^adapterMethod);
         bool InterfaceMatchWithAdapterSignal(_In_ IAdapterSignal ^adapterSignal);
+        bool IsMethodNameUnique(_In_ std::string name);
+        bool IsSignalNameUnique(_In_ std::string name);
+        void HandleSignal(IAdapterSignal ^adapterSignal);
 
         inline alljoyn_interfacedescription GetInterfaceDescription()
         {
@@ -46,16 +55,23 @@ namespace BridgeRT
         {
             return &m_interfaceName;
         }
-        inline alljoyn_busobject GetBusObject()
+        inline DeviceBusObject* GetParent()
         {
-            return m_AJBusObject;
+            return m_parent;
         }
         bool IsAJNameUnique(_In_ std::string name);
         inline DWORD GetIndexForAJProperty()
         {
             return m_indexForAJProperty++;
         }
-
+        inline DWORD GetIndexForMethod()
+        {
+            return m_indexForMethod++;
+        }
+        inline DWORD GetIndexForSignal()
+        {
+            return m_indexForSignal++;
+        }
         inline std::vector<AllJoynProperty *> &GetAJProperties()
         {
             return m_AJProperties;
@@ -68,16 +84,47 @@ namespace BridgeRT
         {
             return m_deviceProperties;
         }
+        IAdapterProperty^ GetAdapterProperty()
+        {
+            return m_adapterProperty;
+        }
+
+        DeviceMethod * GetDeviceMethod(std::string name) 
+        {
+            auto index = m_deviceMethods.find(name);
+            if (index == m_deviceMethods.end())
+            {
+                return nullptr;
+            }
+            return index->second;
+        }
+
+       /* std::map<std::string, DeviceSignal *> GetDeviceSignals()
+        {
+            return m_deviceSignals;
+        }*/
+
+        DeviceSignal * GetDeviceSignal(std::string name)
+        {
+            auto index = m_deviceSignals.find(name);
+            if (index == m_deviceSignals.end())
+            {
+                return nullptr;
+            }
+            return index->second;
+        }
+
     private:
-        QStatus CreateDeviceProperties(IAdapterInterface^ iface, BridgeDevice ^bridge);
+        QStatus CreateDeviceProperties(IAdapterInterface^ iface, BridgeDevice ^bridge, DeviceBusObject *parent);
         QStatus CreateMethodsAndSignals(IAdapterInterface^ iface, BridgeDevice ^bridge);
         QStatus GetInterfaceProperty(IAdapterProperty ^adapterProperty, PropertyInterface **propertyInterface);
+        static void AJ_CALL AJMethod(_In_ alljoyn_busobject busObject, _In_ const alljoyn_interfacedescription_member* member, _In_ alljoyn_message msg);
 
         // alljoyn related
-        alljoyn_busobject m_AJBusObject;
         alljoyn_interfacedescription m_interfaceDescription;
         std::string m_interfaceName;
         std::vector<AllJoynProperty *> m_AJProperties;
+        IAdapterProperty^ m_adapterProperty;
         //std::vector<AllJoynSignal *> m_AJSignals;
         //std::vector<AllJoynMethod *> m_AJMethods;
         DeviceProperty * m_deviceProperties;
@@ -91,8 +138,9 @@ namespace BridgeRT
         DWORD m_indexForMethod;
 
         // list of Signals
-        std::map<int, DeviceSignal *> m_deviceSignals;
+        std::map<std::string, DeviceSignal *> m_deviceSignals;
         DWORD m_indexForSignal;
+        DeviceInterfaceSignalListener^ m_listener;
     };
 }
 

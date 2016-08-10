@@ -25,6 +25,7 @@
 #include "DeviceSignal.h"
 #include "PropertyInterface.h"
 #include "DeviceInterface.h"
+#include "DeviceInterfaceSignalListener.h"
 #include "DeviceBusObject.h"
 #include "AllJoynProperty.h"
 #include "BridgeUtils.h"
@@ -75,7 +76,7 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
         status = ER_BAD_ARG_2;
         goto leave;
     }
-
+    m_parent = parent;
     m_interfaceName = ConvertTo<std::string>(iface->Name);
 
     // create alljoyn interface 
@@ -93,7 +94,7 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
         return status;
     }
 
-    status = CreateDeviceProperties(iface, bridge);
+    status = CreateDeviceProperties(iface, bridge, parent);
     if (ER_OK != status)
     {
         return status;
@@ -104,8 +105,31 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
         return status;
     }
 
+
     alljoyn_interfacedescription_activate(m_interfaceDescription);
     status = alljoyn_busobject_addinterface_announced(parent->GetBusObject(), m_interfaceDescription);
+
+
+
+
+    // add method handler
+    for (auto val : m_deviceMethods)
+    {
+        alljoyn_interfacedescription_member member = { 0 };
+        QCC_BOOL found = false;
+
+        found = alljoyn_interfacedescription_getmember(m_interfaceDescription, val.second->GetName().c_str(), &member);
+        if (!found)
+        {
+            return ER_INVALID_DATA;
+        }
+
+        status = alljoyn_busobject_addmethodhandler(parent->GetBusObject(), member, AJMethod, NULL);
+        if (ER_OK != status)
+        {
+            return status;
+        }
+    }
 
 leave:
     if (ER_OK != status &&
@@ -135,10 +159,11 @@ void DeviceInterface::Shutdown()
     m_deviceSignals.clear();
 }
 
-QStatus DeviceInterface::CreateDeviceProperties(IAdapterInterface^ iface, BridgeDevice ^bridge)
+QStatus DeviceInterface::CreateDeviceProperties(IAdapterInterface^ iface, BridgeDevice ^bridge, DeviceBusObject *parent)
 {
     QStatus status = ER_OK;
-
+    if (iface->Properties == nullptr)
+        return status;
     PropertyInterface *newInterface = nullptr;
 
     m_propertyInterface = nullptr;
@@ -157,7 +182,6 @@ QStatus DeviceInterface::CreateDeviceProperties(IAdapterInterface^ iface, Bridge
         goto leave;
     }
     m_propertyInterface = newInterface;
-
     DeviceProperty *deviceProperty = nullptr;
     // create device property
     deviceProperty = new (std::nothrow) DeviceProperty();
@@ -168,11 +192,12 @@ QStatus DeviceInterface::CreateDeviceProperties(IAdapterInterface^ iface, Bridge
     }
 
 
-    status = deviceProperty->Initialize(iface->Properties, m_propertyInterface, bridge);
+    status = deviceProperty->Initialize(iface->Properties, m_propertyInterface, bridge, parent->GetBusObject());
     if (ER_OK != status)
     {
         goto leave;
     }
+    m_adapterProperty = iface->Properties;
     m_deviceProperties = deviceProperty;
 
     deviceProperty = nullptr;
@@ -196,55 +221,118 @@ QStatus DeviceInterface::CreateMethodsAndSignals(IAdapterInterface^ iface, Bridg
     {
         for (auto adapterMethod : iface->Methods)
         {
-            // method = new(std::nothrow) DeviceMethod();
-            // if (nullptr == method)
-            // {
-            //     status = ER_OUT_OF_MEMORY;
-            //     return status;
-            // }
-            // 
-            // status = method->Initialize(this, adapterMethod);
-            // if (ER_OK != status)
-            // {
-            //     return status;
-            // }
-            // 
-            // m_deviceMethods.insert(std::make_pair(method->GetName(), method));
-            // method = nullptr;
+            method = new(std::nothrow) DeviceMethod();
+            if (nullptr == method)
+            {
+                status = ER_OUT_OF_MEMORY;
+                return status;
+            }
+
+            status = method->Initialize(this, adapterMethod);
+            if (ER_OK != status)
+            {
+                return status;
+            }
+
+            m_deviceMethods.insert(std::make_pair(method->GetName(), method));
+            method = nullptr;
         }
     }
-
     // create signals
     if (nullptr != iface->Signals)
     {
+        m_listener = ref new DeviceInterfaceSignalListener();
+        m_listener->Initialize(this);
         for (auto adapterSignal : iface->Signals)
         {
-            // if (adapterSignal->Name == Constants::CHANGE_OF_VALUE_SIGNAL)
-            // {
-            //     // change of value signal only concerns IAdapterProperty hence not this class
-            //     continue;
-            // }
-            // 
-            // signal = new(std::nothrow) DeviceSignal();
-            // if (nullptr == signal)
-            // {
-            //     return ER_OUT_OF_MEMORY;
-            // }
-            // 
-            // status = signal->Initialize(this, adapterSignal);
-            // if (ER_OK != status)
-            // {
-            //     return status;
-            // }
-            // 
-            // m_deviceSignals.insert(std::make_pair(adapterSignal->GetHashCode(), signal));
-            // signal = nullptr;
+            if (adapterSignal->Name == Constants::CHANGE_OF_VALUE_SIGNAL)
+            {
+                // change of value signal only concerns IAdapterProperty hence not this class
+                continue;
+            }
+            
+            signal = new(std::nothrow) DeviceSignal();
+            if (nullptr == signal)
+            {
+                return ER_OUT_OF_MEMORY;
+            }
+            
+            status = signal->Initialize(this, adapterSignal);
+            if (ER_OK != status)
+            {
+                return status;
+            }
+            
+            m_deviceSignals.insert(std::make_pair(ConvertTo<std::string>(adapterSignal->Name), signal));
+            signal = nullptr;
+            
+            DsbBridge::SingleInstance()->GetAdapter()->RegisterSignalListener(adapterSignal, bridge, m_listener);
         }
     }
 
     return status;
 }
 
+void DeviceInterface::AdapterSignalHandler(IAdapterSignal ^Signal)
+{
+    
+   /* if (Signal->Name == Constants::CHANGE_OF_VALUE_SIGNAL)
+    {
+        HandleCOVSignal(Signal);
+    }
+    else*/
+    {
+        // sanity check
+        if (nullptr == Signal)
+        {
+            return;
+        }
+
+        // get corresponding signal class instance
+        
+        auto signal = GetDeviceSignal(ConvertTo<std::string>(Signal->Name));
+        if (signal == nullptr)
+        {
+            // unknown IAdapterSignal
+            return;
+        }
+
+        // send signal to alljoyn
+        signal->SendSignal();
+    }
+}
+
+
+bool DeviceInterface::IsMethodNameUnique(std::string name)
+{
+    // verify there is no method with same name
+    auto methodIterator = m_deviceMethods.find(name);
+    if (methodIterator == m_deviceMethods.end())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool DeviceInterface::IsSignalNameUnique(std::string name)
+{
+    bool retVal = true;
+
+    // verify there is no signal with same name
+    for (auto tempSignal : m_deviceSignals)
+    {
+        if (tempSignal.second->GetName() == name)
+        {
+            retVal = false;
+            break;
+        }
+    }
+
+    return retVal;
+}
 bool DeviceInterface::InterfaceMatchWithAdapterMethod(IAdapterMethod ^adapterMethod)
 {
     return false; // TODO
@@ -309,4 +397,84 @@ bool DeviceInterface::IsAJNameUnique(std::string name)
     }
     // TODO: Check signals and methods too
     return retval;
+}
+
+
+void DeviceInterface::AJMethod(_In_ alljoyn_busobject busObject, _In_ const alljoyn_interfacedescription_member* member, _In_ alljoyn_message msg)
+{
+    QStatus status = ER_OK;
+    uint32 adapterStatus = ERROR_SUCCESS;
+
+    std::map<std::string, DeviceMethod *>::iterator methodIterator;
+    DeviceMethod *deviceMehod = nullptr;
+    alljoyn_msgarg outArgs = NULL;
+    size_t nbOfArgs = 0;
+
+    // get instance of device main from bus object
+    DeviceBusObject *deviceMain = DeviceBusObject::GetInstance(busObject);
+    if (nullptr == deviceMain)
+    {
+        status = ER_OS_ERROR;
+        goto leave;
+    }
+    auto ifaceName = alljoyn_interfacedescription_getname(member->iface);
+    auto iface = deviceMain->GetInterface(ifaceName);
+    if (iface == nullptr)
+    {
+        status = ER_BUS_UNKNOWN_INTERFACE;
+        goto leave;
+    }
+    
+    deviceMehod = iface->GetDeviceMethod(member->name);   
+    if (deviceMehod == nullptr)
+    {
+        status = ER_NOT_IMPLEMENTED;
+        goto leave;
+    }
+
+    // invoke method
+    adapterStatus = deviceMehod->InvokeMethod(msg, &outArgs, &nbOfArgs);
+    if (ERROR_SUCCESS != adapterStatus)
+    {
+        status = ER_OS_ERROR;
+        goto leave;
+    }
+
+leave:
+    if (ER_OK != status)
+    {
+        alljoyn_busobject_methodreply_status(busObject, msg, status);
+    }
+    else if (0 == nbOfArgs)
+    {
+        alljoyn_busobject_methodreply_args(busObject, msg, NULL, 0);
+    }
+    else
+    {
+        alljoyn_busobject_methodreply_args(busObject, msg, outArgs, nbOfArgs);
+    }
+    if (NULL != outArgs)
+    {
+        alljoyn_msgarg_destroy(outArgs);
+    }
+}
+
+void DeviceInterface::HandleSignal(_In_ IAdapterSignal ^adapterSignal)
+{
+    // sanity check
+    if (nullptr == adapterSignal)
+    {
+        return;
+    }
+
+    // get corresponding signal class instance
+    auto signal = m_deviceSignals.find(ConvertTo<std::string>(adapterSignal->Name));
+    if (m_deviceSignals.end() == signal)
+    {
+        // unknown IAdapterSignal
+        return;
+    }
+
+    // send signal to alljoyn
+    signal->second->SendSignal();
 }

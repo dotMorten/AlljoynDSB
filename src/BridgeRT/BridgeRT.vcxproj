@@ -256,6 +256,7 @@
     <ClInclude Include="AllJoynAboutIcon.h" />
     <ClInclude Include="DeviceBusObject.h" />
     <ClInclude Include="DeviceInterface.h" />
+    <ClInclude Include="DeviceInterfaceSignalListener.h" />
     <ClInclude Include="ILSFHandler.h" />
     <ClInclude Include="LampDetails.h" />
     <ClInclude Include="LampParameters.h" />

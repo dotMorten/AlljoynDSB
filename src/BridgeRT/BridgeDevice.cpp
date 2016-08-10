@@ -23,6 +23,7 @@
 #include "BridgeDevice.h"
 #include "DeviceProperty.h"
 #include "DeviceInterface.h"
+#include "DeviceInterfaceSignalListener.h"
 #include "DeviceBusObject.h"
 #include "PropertyInterface.h"
 #include "DeviceMain.h"
@@ -817,7 +818,25 @@ HRESULT BridgeDevice::registerSignalHandlers(bool IsRegister)
             DsbBridge::SingleInstance()->GetAdapter()->UnregisterSignalListener(signal, this);
         }
     }
-
+    //for (auto b : m_deviceBusObjects)
+    //{
+    //    for (auto iface : b->GetInterfaces())
+    //    {
+    //        for (auto signal : iface->Signals)
+    //        {
+    //            if (IsRegister)
+    //            {
+    //                // silently failing here is OK because it could happen that adapter device
+    //                // have some signal in its list and still to register listener
+    //                DsbBridge::SingleInstance()->GetAdapter()->RegisterSignalListener(signal, this, nullptr);
+    //            }
+    //            else
+    //            {
+    //                DsbBridge::SingleInstance()->GetAdapter()->UnregisterSignalListener(signal, this);
+    //            }
+    //        }
+    //    }
+    //}
     return S_OK;
 }
 
@@ -848,9 +867,9 @@ void BridgeDevice::AdapterSignalHandler(IAdapterSignal ^Signal, Platform::Object
     }
     else
     {
-        // TODO: find signal on busobjects
-        throw;
-        // m_deviceMain->HandleSignal(Signal);
+        DeviceInterfaceSignalListener^ iface = (DeviceInterfaceSignalListener^)Context;
+        auto i = iface->GetInterface();
+        i->AdapterSignalHandler(Signal);
     }
 }
 
@@ -871,19 +890,33 @@ void BridgeDevice::HandleCOVSignal(IAdapterSignal ^ signal)
             newValue = dynamic_cast<IAdapterValue^>(param->Data);
         }
     }
-    throw;
-    //if (adapterProperty != nullptr && newValue != nullptr)
-    //{
-    //    // get the property that has changed
-    //    for (auto val : m_deviceProperties)
-    //    {
-    //        if (val.second->GetAdapterProperty() == adapterProperty)
-    //        {
-    //            val.second->EmitSignalCOV(newValue, m_activeSessions);
-    //            break;
-    //        }
-    //    }
-    //}
+
+    if (adapterProperty != nullptr && newValue != nullptr)
+    {
+        for (auto b : m_deviceBusObjects)
+        {
+            for (auto iface : b.second->GetInterfaces())
+            {
+                if (iface.second->GetAdapterProperty() == adapterProperty)
+                {
+                    auto prop = iface.second->GetDeviceProperties();
+                    if(prop != nullptr)
+                        prop->EmitSignalCOV(newValue, m_activeSessions);
+                    break;
+
+                }
+            }
+        }
+        // get the property that has changed
+       /* for (auto val : m_deviceProperties)
+        {
+            if (val.second->GetAdapterProperty() == adapterProperty)
+            {
+                val.second->EmitSignalCOV(newValue, m_activeSessions);
+                break;
+            }
+        }*/
+    }
 }
 
 IAdapterProperty ^BridgeDevice::GetAdapterProperty(_In_ std::string busObjectPath)

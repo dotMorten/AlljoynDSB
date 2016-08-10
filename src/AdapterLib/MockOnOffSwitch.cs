@@ -15,7 +15,6 @@ namespace AdapterLib
         private IAdapterInterface _interfaceOff;
         private IAdapterInterface _interfaceOnOff;
         private bool _currentValue;
-        private System.Threading.CancellationTokenSource _updateToken;
 
         public MockOnOffSwitchDevice(Adapter bridge, string name, string id, bool isOn) :
             base(name, "MockDevices Inc", "Mock Switch", "1", id, "")
@@ -34,7 +33,7 @@ namespace AdapterLib
             //System.Threading.Timer t = new System.Threading.Timer((o) =>
             //{
             //    CurrentValue = !CurrentValue;
-            //}, null, 1000, 1000);
+            //}, null, 5000, 10000);
         }
 
         /*
@@ -64,6 +63,7 @@ namespace AdapterLib
                 System.Diagnostics.Debug.WriteLine("SwitchOn!");
                 m.SetResult(0);
             };
+            iface.Methods.Add(m);
             return iface;
         }
         /*
@@ -94,7 +94,7 @@ namespace AdapterLib
                 System.Diagnostics.Debug.WriteLine("SwitchOff!");
                 m.SetResult(0);
             };
-
+            iface.Methods.Add(m);
             return iface;
         }
         /*
@@ -112,15 +112,17 @@ namespace AdapterLib
             </property>
         </interface>
         */
-        private static IAdapterInterface CreateOnOffInterface(string objectPath, bool currentValue)
+        private static IAdapterInterface CreateOnOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnOffStatus");
-            var property = new AdapterProperty(objectPath);
+            var property = new AdapterProperty("abc");
             property.Attributes.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
             property.Attributes[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             property.Attributes.Add(new AdapterAttribute("OnOff", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
             property.Attributes[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current on/off state of the appliance. If true, the device is on state.");
             iface.Properties = property;
+            var toggledSignal = new AdapterSignal("SwitchToggled");
+            iface.Signals.Add(toggledSignal);
             return iface;
         }
 
@@ -151,19 +153,20 @@ namespace AdapterLib
             {
                 attr.Value.Data = value;
                 _bridge.SignalChangeOfAttributeValue(this, _interfaceOnOff.Properties, attr);
+                _bridge.NotifySignalListener(_interfaceOnOff.Signals[0]);
             }
-            attr = _interfaceOn.Properties.Attributes.Where(a => a.Value.Name == "IsOn").First();
-            if (attr.Value.Data != (object)value)
-            {
-                attr.Value.Data = value;
-                _bridge.SignalChangeOfAttributeValue(this, _interfaceOn.Properties, attr);
-            }
-            attr = _interfaceOff.Properties.Attributes.Where(a => a.Value.Name == "IsOff").First();
-            if (attr.Value.Data != (object)value)
-            {
-                attr.Value.Data = !value;
-                _bridge.SignalChangeOfAttributeValue(this, _interfaceOff.Properties, attr);
-            }
+            // attr = _interfaceOn.Properties.Attributes.Where(a => a.Value.Name == "IsOn").First();
+            // if (attr.Value.Data != (object)value)
+            // {
+            //     attr.Value.Data = value;
+            //     _bridge.SignalChangeOfAttributeValue(this, _interfaceOn.Properties, attr);
+            // }
+            // attr = _interfaceOff.Properties.Attributes.Where(a => a.Value.Name == "IsOff").First();
+            // if (attr.Value.Data != (object)value)
+            // {
+            //     attr.Value.Data = !value;
+            //     _bridge.SignalChangeOfAttributeValue(this, _interfaceOff.Properties, attr);
+            // }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

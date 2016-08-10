@@ -92,5 +92,6 @@
     <ClInclude Include="BridgeUtils.h" />
     <ClInclude Include="DeviceBusObject.h" />
     <ClInclude Include="DeviceInterface.h" />
+    <ClInclude Include="DeviceInterfaceSignalListener.h" />
   </ItemGroup>
 </Project>

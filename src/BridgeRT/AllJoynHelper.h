@@ -20,7 +20,7 @@ namespace BridgeRT
 {
     static const int WAIT_TIMEOUT_FOR_ADAPTER_OPERATION = 20000;  // ms
 
-    class DeviceMain;
+    class DeviceInterface;
 
     class AllJoynHelper
     {
@@ -32,13 +32,13 @@ namespace BridgeRT
         template<typename T>
         static QStatus SetMsgArg(_Inout_ alljoyn_msgarg msgArg, _In_ const std::string& ajSignature, _In_ Platform::Array<T>^ arrayArg);
 
-        static QStatus SetMsgArgFromAdapterObject(_In_ IAdapterValue ^adapterValue, _Inout_ alljoyn_msgarg msgArg, _In_ DeviceMain *deviceMain);
+        static QStatus SetMsgArgFromAdapterObject(_In_ IAdapterValue ^adapterValue, _Inout_ alljoyn_msgarg msgArg, _In_ DeviceInterface *deviceMain);
 
         template<typename T>
         static QStatus GetArrayFromMsgArg(_In_ alljoyn_msgarg msgArg, _In_ const std::string& ajSignature, _Out_ Platform::Array<T>^* arrayArg);
 
         static QStatus GetAdapterValue(_Inout_ IAdapterValue ^adapterValue, _In_ alljoyn_msgarg msgArg);
-        static QStatus GetAdapterObject(_Inout_ IAdapterValue ^adapterValue, _In_ alljoyn_msgarg msgArg, _In_ DeviceMain *deviceMain);
+        static QStatus GetAdapterObject(_Inout_ IAdapterValue ^adapterValue, _In_ alljoyn_msgarg msgArg, _In_ DeviceInterface *deviceMain);
         static QStatus GetSignature(_In_ Windows::Foundation::PropertyType propertyType, _Out_ std::string &signature);
 
         static void EncodeBusObjectName(_In_ Platform::String ^inString, _Inout_ std::string &builtName);

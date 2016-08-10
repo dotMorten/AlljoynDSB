@@ -81,6 +81,18 @@ namespace BridgeRT
         {
             return m_pLightingService;
         }
+        inline std::map<std::string, DeviceBusObject *> GetDeviceBusObjects()
+        {
+            return m_deviceBusObjects;
+        }
+
+        DeviceBusObject* GetDeviceBusObject(std::string objectPath)
+        {
+            auto index = m_deviceBusObjects.find(objectPath);
+            if (index == m_deviceBusObjects.end())
+                return nullptr;
+            return index->second;
+        }
 
     private:
         void VerifyCOVSupport();

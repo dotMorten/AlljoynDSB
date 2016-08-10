@@ -48,11 +48,10 @@ DeviceProperty::~DeviceProperty()
 {
 }
 
-QStatus DeviceProperty::Initialize(IAdapterProperty ^deviceProperty,  PropertyInterface *propertyInterface, BridgeDevice ^parent)
+QStatus DeviceProperty::Initialize(IAdapterProperty ^deviceProperty,  PropertyInterface *propertyInterface, BridgeDevice ^parent, alljoyn_busobject busObject)
 {
     QStatus status = ER_OK;
     string tempString;
-
     // sanity check
     if (nullptr == deviceProperty)
     {
@@ -73,7 +72,7 @@ QStatus DeviceProperty::Initialize(IAdapterProperty ^deviceProperty,  PropertyIn
     m_deviceProperty = deviceProperty;
     m_propertyInterface = propertyInterface;
     m_parent = parent;
-
+    m_AJBusObject = busObject;
 
     status = PairAjProperties();
     if (ER_OK != status)

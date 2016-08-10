@@ -34,7 +34,7 @@ namespace BridgeRT
         DeviceProperty();
         virtual ~DeviceProperty();
 
-        QStatus Initialize(_In_ IAdapterProperty ^deviceProperty, _In_ PropertyInterface *propertyInterface, _In_ BridgeDevice ^parent);
+        QStatus Initialize(_In_ IAdapterProperty ^deviceProperty, _In_ PropertyInterface *propertyInterface, _In_ BridgeDevice ^parent, _In_ alljoyn_busobject);
         void Shutdown();
         void EmitSignalCOV(_In_ IAdapterValue ^newValue, const std::vector<alljoyn_sessionid>& sessionIds);
 

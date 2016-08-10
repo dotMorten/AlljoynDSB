@@ -15,38 +15,28 @@
 //
 
 #pragma once
+#include <IAdapter.h>
 
 namespace BridgeRT
 {
     class DeviceInterface;
-
-    class DeviceSignal
+ 
+    ref class DeviceInterfaceSignalListener sealed
     {
-    public:
-        DeviceSignal();
-        virtual ~DeviceSignal();
 
-        QStatus Initialize(_In_ DeviceInterface *parent, IAdapterSignal ^adapterSignal);
-        void SendSignal();
-        inline std::string &GetName()
+        public:
+        DeviceInterfaceSignalListener() { };
+    internal:
+        DeviceInterface* GetInterface()
         {
-            return m_exposedName;
-        }
-
+            return m_iface;
+        };
+        void Initialize(DeviceInterface* iface)
+        {
+            m_iface = iface;
+        };
     private:
-        QStatus SetName(_In_ Platform::String ^name);
-        QStatus BuildSignature();
-
-        // adapter signal
-        IAdapterSignal ^m_adapterSignal;
-
-        // alljoyn related
-        std::string m_exposedName;
-        std::string m_signature;
-        std::string m_parameterNames;
-
-        // parent
-        DeviceInterface *m_parent;
+        DeviceInterface* m_iface;
     };
 }
 

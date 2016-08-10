@@ -17,7 +17,7 @@
 #include "pch.h"
 
 #include "Bridge.h"
-#include "DeviceMain.h"
+#include "DeviceInterface.h"
 #include "DeviceMethod.h"
 #include "AllJoynHelper.h"
 #include "BridgeUtils.h"
@@ -177,7 +177,7 @@ leave:
     return adapterStatus;
 }
 
-QStatus DeviceMethod::Initialize(DeviceMain *parent, IAdapterMethod ^adapterMethod)
+QStatus DeviceMethod::Initialize(DeviceInterface *parent, IAdapterMethod ^adapterMethod)
 {
     QStatus status = ER_OK;
 

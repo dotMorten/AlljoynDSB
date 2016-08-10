@@ -26,7 +26,7 @@ namespace BridgeRT
         DeviceMethod();
         virtual ~DeviceMethod();
 
-        QStatus Initialize(_In_ DeviceMain *parent, IAdapterMethod ^adapterMethod);
+        QStatus Initialize(_In_ DeviceInterface *parent, IAdapterMethod ^adapterMethod);
         uint32 InvokeMethod(_In_ alljoyn_message msg, _Out_ alljoyn_msgarg *outArgs, _Out_ size_t *nbOfArgs);
         inline std::string &GetName()
         {
@@ -47,7 +47,7 @@ namespace BridgeRT
         std::string m_parameterNames;
 
         // parent
-        DeviceMain *m_parent;
+        DeviceInterface *m_parent;
     };
 }
 

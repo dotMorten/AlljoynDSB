@@ -194,7 +194,7 @@ QStatus DeviceMain::CreateMethodsAndSignals()
                 goto leave;
             }
 
-            status = method->Initialize(this, adapterMethod);
+            //status = method->Initialize(this, adapterMethod);
             if (ER_OK != status)
             {
                 goto leave;
@@ -223,7 +223,7 @@ QStatus DeviceMain::CreateMethodsAndSignals()
                 goto leave;
             }
 
-            status = signal->Initialize(this, adapterSignal);
+            //status = signal->Initialize(this, adapterSignal);
             if (ER_OK != status)
             {
                 goto leave;

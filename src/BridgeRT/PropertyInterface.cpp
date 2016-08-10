@@ -164,8 +164,6 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, DeviceInter
         ajProperty = nullptr;
     }
 
-    alljoyn_interfacedescription_activate(m_interfaceDescription);
-
 leave:
     if (ER_OK != status &&
         nullptr != ajProperty)

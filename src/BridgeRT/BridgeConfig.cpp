@@ -805,7 +805,11 @@ BridgeConfig::isFilePresent(StorageFolder^ appFolder, String^ pFileName)
     task<IStorageItem^> tryGetFileTask = create_task(appFolder->TryGetItemAsync(pFileName));
     tryGetFileTask.then([&](IStorageItem^ item)
     {
-        sItem = item;
+        if (item != nullptr)
+        {
+            auto getProps = create_task(item->GetBasicPropertiesAsync());
+            getProps.then([&](Windows::Storage::FileProperties::BasicProperties^ p) {  if (p->Size > 0) { sItem = item; } }).wait();
+        }
     }).wait();
 
     return sItem != nullptr;

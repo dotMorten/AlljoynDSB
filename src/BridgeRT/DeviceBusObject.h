@@ -44,10 +44,23 @@ namespace BridgeRT
         {
             return m_interfaces;
         }
+        DeviceInterface * GetInterface(std::string name)
+        {
+            auto index = m_interfaces.find(name);
+            if (index == m_interfaces.end())
+            {
+                return nullptr;
+            }
+            return index->second;
+        }
+        BridgeDevice^ GetParent()
+        {
+            return m_parent;
+        }
+        static DeviceBusObject *GetInstance(_In_ alljoyn_busobject busObject);
 
     private:
         // QStatus PairAjProperties();
-
         static QStatus AJ_CALL GetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _Out_ alljoyn_msgarg val);
         static QStatus AJ_CALL SetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _In_ alljoyn_msgarg val);
 

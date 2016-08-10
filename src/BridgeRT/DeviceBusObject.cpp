@@ -201,7 +201,29 @@ QStatus AJ_CALL DeviceBusObject::GetProperty(_In_ const void* context, _In_z_ co
 leave:
     return status;
 }
+DeviceBusObject *DeviceBusObject::GetInstance(_In_ alljoyn_busobject busObject)
+{
+    // sanity check
+    if (NULL == busObject)
+    {
+        return nullptr;
+    }
 
+    // find out the DeviceMain instance that correspond to the alljoyn bus object
+    //DeviceMain *objectPointer = nullptr;
+    auto deviceList = DsbBridge::SingleInstance()->GetDeviceList();
+    for (auto device : deviceList)
+    {
+        auto objectPointer = device.second->GetDeviceBusObjects();
+        for (auto bus : objectPointer)
+        {
+            if (bus.second->GetBusObject() == busObject)
+                return bus.second;
+        }
+    }
+
+    return nullptr;
+}
 QStatus AJ_CALL DeviceBusObject::SetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _In_ alljoyn_msgarg val)
 {
     QStatus status = ER_OK;

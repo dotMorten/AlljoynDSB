@@ -16,7 +16,8 @@
 
 #include "pch.h"
 #include "AllJoynHelper.h"
-#include "DeviceMain.h"
+#include "DeviceInterface.h"
+#include "DeviceBusObject.h"
 #include "BridgeUtils.h"
 
 using namespace Platform;
@@ -722,7 +723,7 @@ leave:
     return status;
 }
 
-QStatus BridgeRT::AllJoynHelper::GetAdapterObject(IAdapterValue ^adapterValue, alljoyn_msgarg msgArg, DeviceMain *deviceMain)
+QStatus BridgeRT::AllJoynHelper::GetAdapterObject(IAdapterValue ^adapterValue, alljoyn_msgarg msgArg, DeviceInterface *deviceMain)
 {
     QStatus status = ER_OK;
     char *tempChar = nullptr;
@@ -746,7 +747,7 @@ QStatus BridgeRT::AllJoynHelper::GetAdapterObject(IAdapterValue ^adapterValue, a
     }
 
     // find adapter object from string
-    propertyParam = deviceMain->GetAdapterProperty(tempChar);
+    propertyParam = deviceMain->GetAdapterProperty();
     if (nullptr == propertyParam)
     {
         // there is no matching IAdapterProperty for that argument
@@ -759,7 +760,7 @@ leave:
     return status;
 }
 
-QStatus AllJoynHelper::SetMsgArgFromAdapterObject(_In_ IAdapterValue ^adapterValue, _Inout_ alljoyn_msgarg msgArg, _In_ DeviceMain *deviceMain)
+QStatus AllJoynHelper::SetMsgArgFromAdapterObject(_In_ IAdapterValue ^adapterValue, _Inout_ alljoyn_msgarg msgArg, _In_ DeviceInterface *deviceMain)
 {
     QStatus status = ER_OK;
     IAdapterProperty ^adapterProperty = dynamic_cast<IAdapterProperty ^>(adapterValue->Data);
@@ -773,7 +774,7 @@ QStatus AllJoynHelper::SetMsgArgFromAdapterObject(_In_ IAdapterValue ^adapterVal
     }
 
     // get bus object path from IAdapterProperty and set message arg
-    busObjectPath = deviceMain->GetBusObjectPath(adapterProperty);
+    busObjectPath = *deviceMain->GetParent()->GetPathName();
     if (0 == busObjectPath.length())
     {
         status = alljoyn_msgarg_set(msgArg, "s", "");

@@ -18,7 +18,8 @@
 
 #include <sstream>
 #include "BridgeUtils.h"
-#include "DeviceMain.h"
+#include "DeviceInterface.h"
+#include "DeviceBusObject.h"
 #include "DeviceSignal.h"
 #include "AllJoynHelper.h"
 
@@ -40,7 +41,7 @@ DeviceSignal::~DeviceSignal()
 {
 }
 
-QStatus DeviceSignal::Initialize(_In_ DeviceMain *parent, _In_ IAdapterSignal ^adapterSignal)
+QStatus DeviceSignal::Initialize(_In_ DeviceInterface *parent, _In_ IAdapterSignal ^adapterSignal)
 {
     QStatus status = ER_OK;
 
@@ -140,7 +141,7 @@ void DeviceSignal::SendSignal()
     signalFound = alljoyn_interfacedescription_getsignal(m_parent->GetInterfaceDescription(), m_exposedName.c_str(), &signalDescription);
     if (QCC_TRUE == signalFound)
     {
-        alljoyn_busobject_signal(m_parent->GetBusObject(), NULL, ALLJOYN_SESSION_ID_ALL_HOSTED, signalDescription, args, nbOfArgs, 0, 0, NULL);
+        alljoyn_busobject_signal(m_parent->GetParent()->GetBusObject(), NULL, ALLJOYN_SESSION_ID_ALL_HOSTED, signalDescription, args, nbOfArgs, 0, 0, NULL);
     }
 
 leave:

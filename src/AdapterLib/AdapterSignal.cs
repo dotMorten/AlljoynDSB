@@ -53,9 +53,9 @@ namespace AdapterLib
 
         public IList<IAdapterValue> Params { get; }
 
-        internal AdapterSignal(string ObjectName)
+        internal AdapterSignal(string signalName)
         {
-            this.Name = ObjectName;
+            this.Name = signalName;
 
             try
             {
