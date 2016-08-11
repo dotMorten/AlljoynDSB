@@ -4,7 +4,8 @@ using System.ComponentModel;
 
 namespace AllJoyn.Dsb.MockDevices.Test
 {
-    public interface IVersionInterface
+    public interface IAlljoynInterface { }
+    public interface IVersionInterface : IAlljoynInterface
     {
         [EmitsSignalChanged(Emit = false)]
         [DocString("The interface version.")]

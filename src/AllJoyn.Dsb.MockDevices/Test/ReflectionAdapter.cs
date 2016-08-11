@@ -10,11 +10,38 @@ using System.Threading.Tasks;
 
 namespace AllJoyn.Dsb.MockDevices.Test
 {
-    public class ReflectionAdapter<T> : AllJoyn.Dsb.AdapterInterface
+    public class ReflectionBusObject : AllJoyn.Dsb.AdapterBusObject
     {
-        public ReflectionAdapter(T iface) : base(GetInterfaceName())
+        public ReflectionBusObject(object o, string objectPath) : base(objectPath)
         {
-            var type = typeof(T);
+            var t = o.GetType().GetTypeInfo();
+            foreach(var iface in t.ImplementedInterfaces)
+            {
+                if(iface.GetTypeInfo().IsSubclassOf(typeof(IAlljoynInterface)))
+                {
+                    var adapter = new ReflectionAdapter(o, iface);
+                    Interfaces.Add(adapter);
+                    adapter.PropertyChanged += Adapter_PropertyChanged;
+                }
+            }
+        }
+
+        private void Adapter_PropertyChanged(ReflectionAdapter sender, IAdapterAttribute args)
+        {
+            PropertyChanged.Invoke(this, new Tuple<ReflectionAdapter, IAdapterAttribute>(sender, args));
+        }
+
+        internal event Windows.Foundation.TypedEventHandler<ReflectionBusObject, Tuple<ReflectionAdapter, IAdapterAttribute>> PropertyChanged;
+
+    }
+    public class ReflectionAdapter : AllJoyn.Dsb.AdapterInterface
+    {
+        object instance;
+        Type iface;
+        internal ReflectionAdapter(object instance, Type type) : base(GetInterfaceName(type))
+        {
+            this.instance = instance;
+            iface = type;
             bool propertiesEmitsSignalChanged = false;
             foreach (var prop in type.GetTypeInfo().DeclaredProperties)
             {
@@ -36,12 +63,14 @@ namespace AllJoyn.Dsb.MockDevices.Test
             if (propertiesEmitsSignalChanged)
             {
                 //TODO: Create signal changed events
-                if (iface is INotifyPropertyChanged)
+                if (instance is INotifyPropertyChanged)
                 {
-                    (iface as INotifyPropertyChanged).PropertyChanged += ReflectionAdapter_PropertyChanged;
+                    (instance as INotifyPropertyChanged).PropertyChanged += ReflectionAdapter_PropertyChanged;
                 }
             }
         }
+
+        internal event Windows.Foundation.TypedEventHandler<ReflectionAdapter, IAdapterAttribute> PropertyChanged;
 
         private void ReflectionAdapter_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -49,12 +78,12 @@ namespace AllJoyn.Dsb.MockDevices.Test
             if (props != null)
             {
                 //TODO: Raise signal changed
+                PropertyChanged?.Invoke(this, props);
             }
         }
 
-        private static string GetInterfaceName()
+        private static string GetInterfaceName(Type type)
         {
-            var type = typeof(T);
             var attr = type.GetTypeInfo().GetCustomAttribute<InterfaceNameAttribute>();
             if (attr != null)
                 return attr.Name;

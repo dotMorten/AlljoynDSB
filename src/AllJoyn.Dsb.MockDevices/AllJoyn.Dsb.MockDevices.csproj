@@ -115,6 +115,7 @@
     <Compile Include="MockOnOffSwitch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test\AllJoynAttributes.cs" />
+    <Compile Include="Test\InterfaceDefinitions.cs" />
     <Compile Include="Test\ReflectionAdapter.cs" />
     <EmbeddedResource Include="Properties\AdapterLib.MockDevices.rd.xml" />
   </ItemGroup>
