@@ -87,20 +87,10 @@ leave:
 
 void DeviceProperty::Shutdown()
 {
-    if (NULL != m_AJBusObject)
-    {
-        if (m_registeredOnAllJoyn)
-        {
-            // unregister bus object
-            alljoyn_busattachment_unregisterbusobject(m_parent->GetBusAttachment(), m_AJBusObject);
-            m_registeredOnAllJoyn = false;
-        }
-        alljoyn_busobject_destroy(m_AJBusObject);
-        m_AJBusObject = NULL;
-    }
     m_propertyInterface = nullptr;
     m_parent = nullptr;
-    m_AJBusObjectPath.clear();
+	m_AJBusObject = NULL;
+	m_AJBusObjectPath.clear();
     m_AJpropertyAdapterValuePairs.clear();
 }
 
