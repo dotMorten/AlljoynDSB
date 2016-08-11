@@ -29,8 +29,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 
-namespace AdapterLib
+namespace AllJoyn.Dsb
 {
+
+    public class BridgeConfiguration
+    {
+        public BridgeConfiguration(Guid deviceId, string adapterPrefix)
+        {
+            if (deviceId == null) throw new ArgumentNullException(nameof(deviceId));
+            DeviceID = deviceId;
+            if (string.IsNullOrWhiteSpace(adapterPrefix) || adapterPrefix.Contains(" "))
+                throw new ArgumentException(nameof(adapterPrefix));
+            AdapterPrefix = adapterPrefix;
+        }
+        public Guid DeviceID { get; }
+        // the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
+        // it is used by the Device System Bridge as root string for all services and interfaces it exposes
+        public string AdapterPrefix { get; }
+        public string Vendor { get; set; }
+        public string ApplicationName { get; set; }
+        public string DeviceName { get; set; }
+        public string ModelName { get; set; }
+    }
     public sealed class Adapter : IAdapter
     {
         private const uint ERROR_SUCCESS = 0;
@@ -42,45 +62,55 @@ namespace AdapterLib
         private const int DEVICE_REMOVAL_SIGNAL_INDEX = 1;
         private const int DEVICE_REMOVAL_SIGNAL_PARAM_INDEX = 0;
 
-        public string Vendor { get; }
+        public string Vendor { get; } = "";
 
-        public string AdapterName { get; }
+        public string AdapterName { get; } = "";
 
-        public string Version { get; }
+        public string Version { get; } = "";
 
-        public string ExposedAdapterPrefix { get; }
+        public string ExposedAdapterPrefix { get; } = "";
 
-        public string ExposedApplicationName { get; }
+        public string ExposedApplicationName { get; } = "";
+
+        public string ExposedDeviceName { get; } = "";
 
         public Guid ExposedApplicationGuid { get; }
 
         public IList<IAdapterSignal> Signals { get; }
+        
 
-        public Adapter()
+        public Adapter(BridgeConfiguration configuration)
         {
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
+
             Windows.ApplicationModel.Package package = Windows.ApplicationModel.Package.Current;
-            Windows.ApplicationModel.PackageId packageId = package.Id;
-            Windows.ApplicationModel.PackageVersion versionFromPkg = packageId.Version;
-
-            this.Vendor = "Morten Nielsen";
-            this.AdapterName = "Device Simulator DSB";
-
+            Windows.ApplicationModel.PackageId packageId = package?.Id;
+            
+            this.Vendor = configuration.Vendor;
+            this.ExposedApplicationName = configuration.ApplicationName;
+            this.ExposedDeviceName = configuration.DeviceName ?? "";
+            this.AdapterName = configuration.ModelName ?? "";
             // the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
             // it is used by the Device System Bridge as root string for all services and interfaces it exposes
-            this.ExposedAdapterPrefix = "com.dotMorten";
-            this.ExposedApplicationGuid = Guid.Parse("{0x07c19f14,0x76c6,0x4d2f,{0xb4,0xd1,0x7d,0x4f,0x89,0x24,0x17,0x36}}");
+            this.ExposedAdapterPrefix = configuration.AdapterPrefix;
+            this.ExposedApplicationGuid = configuration.DeviceID;
 
             if (null != package && null != packageId)
             {
-                this.ExposedApplicationName = packageId.Name;
-                this.Version = versionFromPkg.Major.ToString() + "." +
-                               versionFromPkg.Minor.ToString() + "." +
-                               versionFromPkg.Revision.ToString() + "." +
-                               versionFromPkg.Build.ToString();
+                if(string.IsNullOrWhiteSpace(AdapterName))
+                    AdapterName = packageId.Name;
+                Windows.ApplicationModel.PackageVersion versionFromPkg = packageId.Version;
+                this.Version = $"{versionFromPkg.Major}.{versionFromPkg.Minor}.{versionFromPkg.Revision}.{versionFromPkg.Build}";
+                if (string.IsNullOrWhiteSpace(Vendor))
+                    Vendor = package.PublisherDisplayName;
+                if (string.IsNullOrWhiteSpace(ExposedApplicationName))
+                    ExposedApplicationName = package.DisplayName;
             }
             else
             {
-                this.ExposedApplicationName = "SimulatorDeviceSystemBridge";
+                if (string.IsNullOrWhiteSpace(ExposedApplicationName))
+                    this.ExposedApplicationName = "DSB";
                 this.Version = "0.0.0.0";
             }
 

@@ -92,6 +92,7 @@ QStatus ConfigManager::ConnectToAllJoyn(_In_ IAdapter^ adapter)
     alljoyn_sessionopts opts = NULL;
     alljoyn_sessionport sp = DSB_SERVICE_PORT;
     std::string appName;
+    Platform::String^ deviceName = nullptr;
 
     // sanity check
     if (nullptr == adapter)
@@ -159,7 +160,10 @@ QStatus ConfigManager::ConnectToAllJoyn(_In_ IAdapter^ adapter)
     m_about.SetApplicationName(m_adapter->ExposedApplicationName->Data());
     m_about.SetApplicationGuid(m_adapter->ExposedApplicationGuid);
     m_about.SetManufacturer(m_adapter->Vendor->Data());
-    m_about.SetDeviceName(Windows::Networking::Proximity::PeerFinder::DisplayName->Data());
+    deviceName = m_adapter->ExposedDeviceName;
+    if (deviceName == nullptr || deviceName->IsEmpty())
+        deviceName = Windows::Networking::Proximity::PeerFinder::DisplayName;
+    m_about.SetDeviceName(deviceName->Data());
     m_about.SetSWVersion(m_adapter->Version->Data());
     m_about.SetModel(m_adapter->AdapterName->Data());
 

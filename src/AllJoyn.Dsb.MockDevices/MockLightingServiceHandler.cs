@@ -34,7 +34,7 @@ using System.Threading.Tasks;
 
 // This class implements the AllJoyn Lighting Service Framework for the Hue Bulbs
 
-namespace AdapterLib.MockDevices
+namespace AllJoyn.Dsb.MockDevices
 {
     public sealed class MockLightingServiceHandler : ILSFHandler, INotifyPropertyChanged
     {
@@ -53,7 +53,7 @@ namespace AdapterLib.MockDevices
             LampDetails_LampBeamAngle = 130;
             LampDetails_LampID = id;
             LampDetails_LampType = (uint) 1;
-            LampDetails_Make = (uint)AdapterLib.MockDevices.LsfEnums.LampMake.MAKE_OEM1;
+            LampDetails_Make = (uint)AllJoyn.Dsb.MockDevices.LsfEnums.LampMake.MAKE_OEM1;
             LampDetails_MaxLumens = 1000;
             LampDetails_MaxTemperature = (uint)(supportsTemperature ? 9000 : 2800);
             LampDetails_MaxVoltage = 120;
@@ -61,7 +61,7 @@ namespace AdapterLib.MockDevices
             colorTemp = kelvinToUInt(LampDetails_MinTemperature);
             LampDetails_MinVoltage = 100;
             LampDetails_Model = 1;
-            LampDetails_Type = (uint)AdapterLib.MockDevices.LsfEnums.DeviceType.TYPE_LAMP;
+            LampDetails_Type = (uint)AllJoyn.Dsb.MockDevices.LsfEnums.DeviceType.TYPE_LAMP;
             LampDetails_VariableColorTemp = supportsTemperature;
             LampDetails_Version = 1;
             LampDetails_Wattage = 7;

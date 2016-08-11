@@ -127,13 +127,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AdapterLib.MockDevices\AdapterLib.MockDevices.csproj">
+    <ProjectReference Include="..\AllJoyn.Dsb.MockDevices\AllJoyn.Dsb.MockDevices.csproj">
       <Project>{43a072e5-e2fb-4eac-9d7e-f51e9eb85083}</Project>
-      <Name>AdapterLib.MockDevices</Name>
+      <Name>AllJoyn.Dsb.MockDevices</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AdapterLib\AdapterLib.csproj">
+    <ProjectReference Include="..\AllJoyn.Dsb\AllJoyn.Dsb.csproj">
       <Project>{5254f40c-cd4c-48f9-9c55-8040f071f1b4}</Project>
-      <Name>AdapterLib</Name>
+      <Name>AllJoyn.Dsb</Name>
     </ProjectReference>
     <ProjectReference Include="..\BridgeRT\BridgeRT.vcxproj">
       <Project>{2783a617-8e1d-40d1-9684-dfaeb8dd5406}</Project>

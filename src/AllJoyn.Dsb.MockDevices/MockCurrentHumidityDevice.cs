@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using BridgeRT;
 using System.ComponentModel;
+using AllJoyn.Dsb.MockDevices.Test;
 
 /*
 <interface name="org.alljoyn.SmartSpaces.Environment.CurrentHumidity">
@@ -25,9 +27,9 @@ using System.ComponentModel;
     </property>
 </interface>
 */
-namespace AdapterLib.MockDevices
+namespace AllJoyn.Dsb.MockDevices
 {
-    public sealed class MockCurrentHumidityDevice : AdapterDevice, INotifyPropertyChanged
+    public sealed class MockCurrentHumidityDevice : AdapterDevice
     {
         private IAdapterInterface _iface;
         private double _currentValue;
@@ -40,28 +42,28 @@ namespace AdapterLib.MockDevices
             BusObjects.Add(new AdapterBusObject("org.alljoyn.SmartSpaces.Environment"));
             BusObjects[0].Interfaces.Add(_iface);
             CreateEmitSignalChangedSignal();
-            CurrentValue = currentHumidity;
+            _currentValue = currentHumidity;
+            System.Threading.Timer t = new System.Threading.Timer((o) =>
+            {
+                // Simulate humidity changes between 00..100
+                DateTime start = (DateTime)o;
+                var timeElapsed = (DateTime.Now - start).TotalMinutes;
+                var newValue = Math.Sin(timeElapsed / 10) * 50 + 50;
+                CurrentValue = newValue;
+            }, DateTime.Now, 3000, 3000);
         }
+
         private static IAdapterInterface CreateInterface(string objectPath, double currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentHumidity");
-            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
             iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue) { COVBehavior = SignalBehavior.Always });
             iface.Properties[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current relative humidity value");
             iface.Properties[1].Annotations.Add("org.alljoyn.Bus.Type.Min", "0");
-            iface.Properties.Add(new AdapterAttribute("MaxValue", 100d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("MaxValue", 100d) { COVBehavior = SignalBehavior.Always });
             iface.Properties[2].Annotations.Add("org.alljoyn.Bus.DocString.En", "Maximum value allowed for represented relative humidity");
             return iface;
-        }
-
-        private void CreateEmitSignalChangedSignal()
-        {
-            // change of value signal
-            AdapterSignal changeOfAttributeValue = new AdapterSignal(Constants.CHANGE_OF_VALUE_SIGNAL);
-            changeOfAttributeValue.Params.Add(new AdapterValue(Constants.COV__PROPERTY_HANDLE, null));
-            changeOfAttributeValue.Params.Add(new AdapterValue(Constants.COV__ATTRIBUTE_HANDLE, null));
-            Signals.Add(changeOfAttributeValue);
         }
 
         public double CurrentValue
@@ -70,8 +72,6 @@ namespace AdapterLib.MockDevices
             set
             {
                 _currentValue = Math.Round(value, 1);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentValue)));
-
                 //Throttle updates to 1sec so we don't saturate the bus
                 if (_updateToken != null) _updateToken.Cancel();
                 var token = _updateToken = new System.Threading.CancellationTokenSource();
@@ -92,7 +92,5 @@ namespace AdapterLib.MockDevices
                 base.SignalChangeOfAttributeValue(_iface, attr);
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

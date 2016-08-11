@@ -12,5 +12,15 @@
         <TextBlock x:Name="status" HorizontalAlignment="Center" VerticalAlignment="Center"
                    FontSize="24" TextWrapping="Wrap" />
 
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20">
+            <TextBlock Text="Simulated devices:" FontWeight="Bold" />
+            <ItemsControl x:Name="deviceList" >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
     </Grid>
 </Page>

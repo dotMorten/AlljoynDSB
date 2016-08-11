@@ -1,5 +1,5 @@
 ﻿/*  
-* AllJoyn Device Service Bridge for Philips Hue
+* AllJoyn Device Service Bridge for Simulated devices
 *  
 * Copyright (c) Morten Nielsen
 * All rights reserved.  
@@ -24,16 +24,42 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Windows.Storage;
+using BridgeRT;
 
-namespace AdapterLib.MockDevices
+namespace AllJoyn.Dsb
 {
-    public class MockBulbDevice : AdapterDevice
+    public sealed class AdapterIcon : BridgeRT.IAdapterIcon
     {
-        public MockBulbDevice(MockLightingServiceHandler handler) : base(handler.Name,
-            "MockDevices Inc", "Mock Bulb", "1", handler.Id, "")
+        byte[] _image = null;
+        public AdapterIcon(Uri uri)
         {
-            base.LightingServiceHandler = handler;
-            Icon = new AdapterIcon(new Uri("ms-appx:///AdapterLib/Icons/Light.png"));
+            if(uri.Scheme == "ms-appx")
+            {
+                var s = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(uri).OpenReadAsync().AsTask();
+                s.Wait();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    s.Result.AsStreamForRead().CopyTo(ms);
+                    _image = ms.ToArray();
+                }
+            }
+            else
+            {
+                Url = uri.OriginalString;
+            }
+        }
+
+        public string MimeType { get; } = "image/png";
+
+        public string Url { get; } = "";
+
+        public byte[] GetImage()
+        {
+            return _image;
         }
     }
 }

@@ -530,6 +530,10 @@ namespace BridgeRT
         {
             Platform::Guid get();
         }
+		property Platform::String^ ExposedDeviceName
+		{
+			Platform::String^ get();
+		}
 
         // Adapter signals
         property IAdapterSignalVector^ Signals

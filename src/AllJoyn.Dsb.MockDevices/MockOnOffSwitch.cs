@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using BridgeRT;
 using System.ComponentModel;
 
-namespace AdapterLib.MockDevices
+namespace AllJoyn.Dsb.MockDevices
 {
-    public sealed class MockOnOffSwitchDevice : AdapterDevice, INotifyPropertyChanged
+    public sealed class MockOnOffSwitchDevice : AdapterDevice
     {
         private AdapterInterface _interfaceOn;
         private AdapterInterface _interfaceOff;
@@ -50,13 +50,12 @@ namespace AdapterLib.MockDevices
         private AdapterInterface CreateOnInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnControl");
-            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
             iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            var m = new AdapterMethod("SwitchOn", "Switch on the device.", 0, () =>
+            var m = new AdapterMethod("SwitchOn", "Switch on the device.", (sender, input, output) =>
             {
                 CurrentValue = true;
                 System.Diagnostics.Debug.WriteLine("SwitchOn!");
-                return 0;
             });
             iface.Methods.Add(m);
             return iface;
@@ -78,13 +77,12 @@ namespace AdapterLib.MockDevices
         private AdapterInterface CreateOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OffControl");
-            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
             iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            var m = new AdapterMethod("SwitchOff", "Switch off the device.", 0, () =>
+            var m = new AdapterMethod("SwitchOff", "Switch off the device.", (sender, input, output) =>
             {
                 CurrentValue = false;
                 System.Diagnostics.Debug.WriteLine("SwitchOff!");
-                return 0;
             });
             iface.Methods.Add(m);
             return iface;
@@ -108,9 +106,9 @@ namespace AdapterLib.MockDevices
         private static AdapterInterface CreateOnOffInterface(bool currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Operation.OnOffStatus");
-            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
             iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
-            iface.Properties.Add(new AdapterAttribute("OnOff", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("OnOff", currentValue) { COVBehavior = SignalBehavior.Always });
             iface.Properties[1].Annotations.Add("org.alljoyn.Bus.DocString.En", "Current on/off state of the appliance. If true, the device is on state.");
             // var toggledSignal = new AdapterSignal("SwitchToggled");
             // iface.Signals.Add(toggledSignal);
@@ -123,7 +121,6 @@ namespace AdapterLib.MockDevices
             set
             {
                 _currentValue = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentValue)));
                 UpdateValue(_currentValue);
             }
         }
@@ -138,7 +135,5 @@ namespace AdapterLib.MockDevices
                 // NotifySignalListener(Signals[0]);
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

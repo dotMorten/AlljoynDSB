@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="5af8e42f-7b8e-4d30-9f7f-2b78ef65f608" Publisher="CN=mort5161" Version="1.0.0.0" />
+  <Identity Name="AllJoynDeviceSimulatorDSB" Publisher="CN=mort5161" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="5af8e42f-7b8e-4d30-9f7f-2b78ef65f608" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>TestApp</DisplayName>
-    <PublisherDisplayName>mort5161</PublisherDisplayName>
+    <DisplayName>DSB TestApp</DisplayName>
+    <PublisherDisplayName>Morten Nielsen</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>

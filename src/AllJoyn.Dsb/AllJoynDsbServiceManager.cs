@@ -1,4 +1,4 @@
-﻿using AdapterLib;
+﻿using AllJoyn.Dsb;
 using BridgeRT;
 using System;
 using System.Collections.Generic;
@@ -11,13 +11,15 @@ using Windows.Devices.AllJoyn;
 using Windows.Foundation;
 using Windows.System.Threading;
 
-namespace AdapterLib
+namespace AllJoyn.Dsb
 {
     public sealed class AllJoynDsbServiceManager
     {
         private static AllJoynDsbServiceManager instance;
         private Adapter adapter;
         private DsbBridge dsbBridge;
+        private Task m_startupTask;
+
 
         public static AllJoynDsbServiceManager Current
         {
@@ -29,8 +31,6 @@ namespace AdapterLib
             }
         }
 
-        public Task StartupTask { get; private set; }
-
         public ServiceState State { get; private set; } = ServiceState.Stopped;
 
         public enum ServiceState
@@ -41,13 +41,13 @@ namespace AdapterLib
             Stopping
         }
 
-        public async Task Shutdown()
+        public async Task ShutdownAsync()
         {
             State = ServiceState.Stopping;
             foreach (var device in Devices.ToArray())
                 RemoveDevice(device);
             await Task.Delay(1000); //Give it some time to announce devices lost
-            StartupTask = null;
+            m_startupTask = null;
             dsbBridge.Shutdown();
             dsbBridge.Dispose();
             dsbBridge = null;
@@ -61,27 +61,38 @@ namespace AdapterLib
         private AllJoynDsbServiceManager()
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            StartupTask = ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction action) =>
+            
+        }
+        
+        public Task StartAsync(BridgeConfiguration configuration)
+        {
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
+            if (m_startupTask == null)
             {
-                State = ServiceState.Starting;
-                try
+                m_startupTask = ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction action) =>
                 {
-                    adapter = new Adapter();
-                    dsbBridge = new DsbBridge(adapter);
-
-                    var initResult = dsbBridge.Initialize();
-                    if (initResult != 0)
+                    State = ServiceState.Starting;
+                    try
                     {
-                        throw new Exception("DSB Bridge initialization failed!");
+                        adapter = new Adapter(configuration);
+                        dsbBridge = new DsbBridge(adapter);
+
+                        var initResult = dsbBridge.Initialize();
+                        if (initResult != 0)
+                        {
+                            throw new Exception("DSB Bridge initialization failed!");
+                        }
+                        State = ServiceState.Running;
                     }
-                    State = ServiceState.Running;
-                }
-                catch (Exception)
-                {
-                    State = ServiceState.Stopped;
-                    throw;
-                }
-            })).AsTask();
+                    catch (Exception)
+                    {
+                        State = ServiceState.Stopped;
+                        throw;
+                    }
+                })).AsTask();
+            }
+            return m_startupTask;
         }
         
         public void AddDevice(IAdapterDevice device)

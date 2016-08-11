@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
+  <metadata minClientVersion="2.8.6">
+    <id>dotMorten.AllJoyn.DSB.Native</id>
+    <version>0.1.0</version>
+    <title>AllJoyn Device Service Bridge (Native Dependency)</title>
+    <authors>Morten Nielsen</authors>
+    <owners>Morten Nielsen</owners>
+    <projectUrl>https://github.com/dotMorten/AlljoynDSB</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>AllJoyn Device Service Bridge for creating and exposing AllJoyn Devices.
+For the Universal Windows Platform (Windows 10).</description>
+    <copyright>Copyright (c) Morten Nielsen All rights reserved.</copyright>
+    <tags>AllJoyn C# C++ Windows UWP UAP Universal Platform</tags>
+  </metadata>
+</package>

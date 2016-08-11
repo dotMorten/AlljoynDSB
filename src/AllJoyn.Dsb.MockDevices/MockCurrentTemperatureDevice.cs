@@ -30,13 +30,12 @@ using System.ComponentModel;
   </property>
 </interface>*/
 
-namespace AdapterLib.MockDevices
+namespace AllJoyn.Dsb.MockDevices
 {
-    public sealed class MockCurrentTemperatureDevice : AdapterDevice, INotifyPropertyChanged
+    public sealed class MockCurrentTemperatureDevice : AdapterDevice
     {
         private IAdapterInterface _iface;
         private double _currentValue;
-        private System.Threading.CancellationTokenSource _updateToken;
 
         public MockCurrentTemperatureDevice(string name, string id, double currentTemperature) : 
             base(name, "MockDevices Inc", "Mock Temperature", "1", id, "")
@@ -46,44 +45,34 @@ namespace AdapterLib.MockDevices
             BusObjects[0].Interfaces.Add(_iface);
             CreateEmitSignalChangedSignal();
             _currentValue = currentTemperature;
+            System.Threading.Timer t = new System.Threading.Timer((o) =>
+            {
+                // Simulate temperature changes between 10..40
+                DateTime start = (DateTime)o;
+                var timeElapsed = (DateTime.Now - start).TotalMinutes;
+                var newTemp = Math.Sin(timeElapsed / 10) * 15 + 25;
+                CurrentValue = newTemp;
+            }, DateTime.Now, 3000, 3000);
         }
 
         private static IAdapterInterface CreateInterface(double currentValue)
         {
             AdapterInterface iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentTemperature");
-            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Never });
-            iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
+            iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue) { COVBehavior = SignalBehavior.Always });
             iface.Properties[1].Annotations.Add("org.alljoyn.Bus.Type.Units", "degrees Celcius");
-            iface.Properties.Add(new AdapterAttribute("Precision", 0.1d, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
-            iface.Properties.Add(new AdapterAttribute("UpdateMinTime", (ushort)1000, E_ACCESS_TYPE.ACCESS_READ) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("Precision", 0.1d) { COVBehavior = SignalBehavior.Always });
+            iface.Properties.Add(new AdapterAttribute("UpdateMinTime", (ushort)3000) { COVBehavior = SignalBehavior.Always });
             return iface;
         }
-
-        private void CreateEmitSignalChangedSignal()
-        {
-            // change of value signal
-            AdapterSignal changeOfAttributeValue = new AdapterSignal(Constants.CHANGE_OF_VALUE_SIGNAL);
-            changeOfAttributeValue.Params.Add(new AdapterValue(Constants.COV__PROPERTY_HANDLE, null));
-            changeOfAttributeValue.Params.Add(new AdapterValue(Constants.COV__ATTRIBUTE_HANDLE, null));
-            Signals.Add(changeOfAttributeValue);
-        }
-
+        
         public double CurrentValue
         {
             get { return _currentValue; }
             set
             {
                 _currentValue = Math.Round(value, 1);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentValue)));
-
-                //Throttle updates to 1sec so we don't saturate the bus
-                if (_updateToken != null) _updateToken.Cancel();
-                var token = _updateToken = new System.Threading.CancellationTokenSource();
-                Task.Delay(1000).ContinueWith(t =>
-                {
-                    if(!token.IsCancellationRequested)
-                        UpdateValue(_currentValue);
-                });
+                UpdateValue(_currentValue);
             }
         }
 
@@ -96,7 +85,5 @@ namespace AdapterLib.MockDevices
                 SignalChangeOfAttributeValue(_iface, attr);
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

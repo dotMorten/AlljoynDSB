@@ -23,7 +23,7 @@
 * DEALINGS IN THE SOFTWARE.  
 */
 
-namespace AdapterLib.MockDevices.LsfEnums
+namespace AllJoyn.Dsb.MockDevices.LsfEnums
 {
     //Values pulled from : https://git.allseenalliance.org/cgit/lighting/service_framework.git/tree/common/inc/LampValues.h
 

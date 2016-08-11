@@ -28,7 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace AdapterLib
+namespace AllJoyn.Dsb
 {
     public sealed class SignalParameter : IAdapterValue
     {
@@ -51,42 +51,17 @@ namespace AdapterLib
         // public properties
         public string Name { get; }
 
-        public IList<IAdapterValue> Params { get; }
+        public IList<IAdapterValue> Params { get; } = new List<IAdapterValue>();
 
         public AdapterSignal(string signalName)
         {
             this.Name = signalName;
-
-            try
-            {
-                this.Params = new List<IAdapterValue>();
-            }
-            catch (OutOfMemoryException ex)
-            {
-                Debug.WriteLine(ex);
-                throw;
-            }
         }
 
         internal AdapterSignal(AdapterSignal Other)
         {
             Name = Other.Name;
-
-            try
-            {
-                Params = new List<IAdapterValue>(Other.Params);
-            }
-            catch (OutOfMemoryException ex)
-            {
-                Debug.WriteLine(ex);
-                throw;
-            }
-        }
-
-        internal void AddParam(string name)
-        {
-            SignalParameter param = new SignalParameter(name);
-            Params.Add(param);
+            Params = new List<IAdapterValue>(Other.Params);
         }
     }
 }
