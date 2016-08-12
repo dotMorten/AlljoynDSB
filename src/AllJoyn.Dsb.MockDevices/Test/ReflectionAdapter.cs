@@ -53,12 +53,12 @@ namespace AllJoyn.Dsb.MockDevices.Test
                     behavior = emits.Emit ? SignalBehavior.Always : SignalBehavior.Never;
                     propertiesEmitsSignalChanged = propertiesEmitsSignalChanged || emits.Emit;
                 }
-                var p = new AllJoyn.Dsb.AdapterAttribute("Version", defaultValue, prop.CanRead, prop.CanWrite) { COVBehavior = behavior };
-                foreach (var anno in prop.GetCustomAttributes<DocStringAttribute>())
-                {
-                    p.Annotations.Add(anno.KeyName, anno.GetValue());
-                }
-                Properties.Add(p);
+                // var p = new AllJoyn.Dsb.AdapterAttribute("Version", defaultValue, prop.CanRead, prop.CanWrite) { COVBehavior = behavior };
+                // foreach (var anno in prop.GetCustomAttributes<DocStringAttribute>())
+                // {
+                //     p.Annotations.Add(anno.KeyName, anno.GetValue());
+                // }
+                // Properties.Add(p);
             }
             if (propertiesEmitsSignalChanged)
             {

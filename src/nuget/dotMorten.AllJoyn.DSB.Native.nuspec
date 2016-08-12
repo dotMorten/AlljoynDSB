@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
   <metadata minClientVersion="2.8.6">
     <id>dotMorten.AllJoyn.DSB.Native</id>
-    <version>0.1.0</version>
+    <version>0.3.0</version>
     <title>AllJoyn Device Service Bridge (Native Dependency)</title>
     <authors>Morten Nielsen</authors>
     <owners>Morten Nielsen</owners>

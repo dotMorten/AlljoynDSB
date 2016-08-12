@@ -23,8 +23,10 @@ namespace TestApp
         {
             status.Text = "Starting up bridge...";
             deviceList.ItemsSource = AllJoynDsbServiceManager.Current.Devices;
+#if !DEBUG //Let things fail in debug
             try
             {
+#endif
                 var config = new BridgeConfiguration(GetDeviceID(), "com.dotMorten.TestApp")
                 {
                     // The following are optional. If not set will be pulled from the package information and system information
@@ -34,11 +36,13 @@ namespace TestApp
                 await AllJoynDsbServiceManager.Current.StartAsync(config);
                 status.Text = "Bridge Running"; // Bridge Successfully Initialized
                 LoadDevices();
+#if !DEBUG
             }
             catch (System.Exception ex)
             {
                 status.Text = "Bridge failed to initialize:\n" + ex.Message;
             }
+#endif
         }
 
         private void LoadDevices()

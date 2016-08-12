@@ -247,8 +247,19 @@ namespace AllJoyn.Dsb
             {
                 if (attribute.Value.Name == Value.Name)
                 {
-                    attribute.Value.Data = Value.Data;
-                    return ERROR_SUCCESS;
+                    try
+                    {
+                        var result = attribute.OnValueSet(Value.Data);
+                        if (result == (uint)AllJoynStatusCode.Ok)
+                        {
+                            attribute.Value.Data = Value.Data;
+                        }
+                        return result;
+                    }
+                    catch
+                    {
+                        return (uint)AllJoynStatusCode.OsError;
+                    }
                 }
             }
 

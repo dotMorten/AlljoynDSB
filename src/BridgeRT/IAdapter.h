@@ -148,6 +148,8 @@ namespace BridgeRT
         {
             SignalBehavior get();
         }
+
+		uint32 OnValueSet(Platform::Object^ value);
     };
 
     //

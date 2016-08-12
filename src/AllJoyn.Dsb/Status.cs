@@ -7,7 +7,7 @@ namespace AllJoyn.Dsb
         /// Enumerated list of values QStatus can return
         /// </summary>
         /// 
-        public enum AllJoynStatusCode
+        public enum AllJoynStatusCode : uint
         {
             Ok = 0x0 /**< Success. */,
             Fail = 0x1 /**< Generic failure. */,

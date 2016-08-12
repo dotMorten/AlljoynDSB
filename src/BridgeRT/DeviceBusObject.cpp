@@ -285,7 +285,7 @@ QStatus AJ_CALL DeviceBusObject::SetProperty(_In_ const void* context, _In_z_ co
     }
     if (ERROR_SUCCESS != adapterStatus)
     {
-        status = ER_BUS_PROPERTY_VALUE_NOT_SET;
+		status = (QStatus)adapterStatus;
         goto leave;
     }
 
