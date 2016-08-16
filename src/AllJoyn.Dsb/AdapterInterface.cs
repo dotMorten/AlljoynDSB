@@ -24,6 +24,8 @@ namespace AllJoyn.Dsb
 
         public IList<IAdapterSignal> Signals { get; } = new List<IAdapterSignal>();
 
+        public IDictionary<string, string> Annotations { get; } = new Dictionary<string, string>();
+
         //
         // AdapterProperty.
         // Description:
@@ -31,32 +33,16 @@ namespace AllJoyn.Dsb
         //
         private class AdapterProperty : IAdapterProperty
         {
-            // public properties
-            public string Name { get; }
             public IList<IAdapterAttribute> Attributes { get; }
 
             internal AdapterProperty()
             {
-                try
-                {
-                    this.Attributes = new List<IAdapterAttribute>();
-                }
-                catch (OutOfMemoryException ex)
-                {
-                    throw;
-                }
+                Attributes = new List<IAdapterAttribute>();
             }
 
             internal AdapterProperty(AdapterProperty Other)
             {
-                try
-                {
-                    this.Attributes = new List<IAdapterAttribute>(Other.Attributes);
-                }
-                catch (OutOfMemoryException)
-                {
-                    throw;
-                }
+                Attributes = new List<IAdapterAttribute>(Other.Attributes);
             }
         }
     }

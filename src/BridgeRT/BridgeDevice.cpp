@@ -309,13 +309,11 @@ QStatus BridgeDevice::CreateBusObjects()
             goto leave;
         }
         m_deviceBusObjects.insert(std::make_pair(*deviceBusObject->GetPathName(), deviceBusObject));
-        for (auto iface : deviceBusObject->GetInterfaces())
-        {
-            auto path = deviceBusObject->GetPathName();
-            auto hasProp = alljoyn_interfacedescription_hasproperties(iface.second->GetInterfaceDescription());
-            //m_about.AddObject(deviceBusObject->GetBusObject(), iface.second->GetInterfaceDescription());
-        }
-        //alljoyn_busattachment_registerbusobject(m_AJBusAttachment, deviceBusObject->GetBusObject());
+        // for (auto iface : deviceBusObject->GetInterfaces())
+        // {
+        //     auto path = deviceBusObject->GetPathName();
+        //     auto hasProp = alljoyn_interfacedescription_hasproperties(iface.second->GetInterfaceDescription());
+        // }
         deviceBusObject = nullptr;
     }
 leave:

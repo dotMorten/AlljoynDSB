@@ -58,6 +58,8 @@ namespace AllJoyn.Dsb.MockDevices
         private static IAdapterInterface CreateInterface(double currentValue)
         {
             AdapterInterface iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentTemperature");
+            iface.Annotations.Add("org.alljoyn.Bus.DocString.En", "This interface provides capability to represent current temperature.");
+            //iface.Annotations.Add("org.alljoyn.Bus.Secure", "true");
             iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
             iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue) { COVBehavior = SignalBehavior.Always });
             iface.Properties[1].Annotations.Add("org.alljoyn.Bus.Type.Units", "degrees Celcius");

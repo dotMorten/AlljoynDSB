@@ -93,6 +93,11 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
     {
         return status;
     }
+	status = CreateAnnotations(iface);
+	if (ER_OK != status)
+	{
+		return status;
+	}
 
     status = CreateDeviceProperties(iface, bridge, parent);
     if (ER_OK != status)
@@ -175,7 +180,7 @@ QStatus DeviceInterface::CreateDeviceProperties(IAdapterInterface^ iface, Bridge
         status = ER_OUT_OF_MEMORY;
         goto leave;
     }
-
+	
     status = newInterface->Create(iface->Properties, this, bridge);
     if (ER_OK != status)
     {
@@ -209,6 +214,25 @@ leave:
         delete deviceProperty;
     }*/
     return status;
+}
+
+QStatus DeviceInterface::CreateAnnotations(IAdapterInterface^ iface)
+{
+	QStatus status = ER_OK;
+	if (nullptr != iface->Annotations)
+	{
+		for (auto adapterMethod : iface->Annotations)
+		{
+			auto key = adapterMethod->Key;
+			auto value = adapterMethod->Value;
+			status = alljoyn_interfacedescription_addannotation(this->m_interfaceDescription, ConvertTo<std::string>(key).c_str(), ConvertTo<std::string>(value).c_str());
+			if (status != ER_OK)
+			{
+				return status;
+			}
+		}
+	}
+	return status;
 }
 
 QStatus DeviceInterface::CreateMethodsAndSignals(IAdapterInterface^ iface, BridgeDevice ^bridge)

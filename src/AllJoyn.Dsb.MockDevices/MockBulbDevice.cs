@@ -1,5 +1,5 @@
 ﻿/*  
-* AllJoyn Device Service Bridge for Philips Hue
+* AllJoyn Device Service Bridge 
 *  
 * Copyright (c) Morten Nielsen
 * All rights reserved.  
@@ -34,6 +34,15 @@ namespace AllJoyn.Dsb.MockDevices
         {
             base.LightingServiceHandler = handler;
             Icon = new AdapterIcon(new Uri("ms-appx:///AllJoyn.Dsb.MockDevices/Icons/Light.png"));
+            if (handler.LampState_LampStateChanged != null)
+            {
+                handler.LampStateChanged += Handler_LampStateChanged;
+            }
+        }
+
+        private void Handler_LampStateChanged(object sender, EventArgs e)
+        {
+            NotifySignalListener(LightingServiceHandler.LampState_LampStateChanged);
         }
     }
 }

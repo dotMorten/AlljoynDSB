@@ -66,6 +66,7 @@ namespace AllJoyn.Dsb.MockDevices
             LampDetails_Version = 1;
             LampDetails_Wattage = 7;
             if (!supportsColor) saturation = 0;
+            _LampStateChanged.Params.Add(new AdapterValue("LampID", id));
         }
         [DataMember]
         public bool LampDetails_Color
@@ -220,6 +221,12 @@ namespace AllJoyn.Dsb.MockDevices
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((nameof(LampParameters_BrightnessLumens))));
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs((nameof(LampParameters_EnergyUsageMilliwatts))));
                 }
+                if(propertyName.StartsWith("LampState_"))
+                {
+                    // TODO: Better to raise this in the setters and end of transitions
+                    // to avoid this being raised for each property after a transition
+                    LampStateChanged?.Invoke(this, EventArgs.Empty);
+                }
             }
             else
             {
@@ -235,6 +242,8 @@ namespace AllJoyn.Dsb.MockDevices
                 return _LampStateChanged;
             }
         }
+
+        public event EventHandler LampStateChanged;
 
         private bool OnOff = true;
         public bool LampState_OnOff

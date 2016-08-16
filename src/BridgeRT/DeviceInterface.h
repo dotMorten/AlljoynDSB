@@ -118,6 +118,7 @@ namespace BridgeRT
         QStatus CreateDeviceProperties(IAdapterInterface^ iface, BridgeDevice ^bridge, DeviceBusObject *parent);
         QStatus CreateMethodsAndSignals(IAdapterInterface^ iface, BridgeDevice ^bridge);
         QStatus GetInterfaceProperty(IAdapterProperty ^adapterProperty, PropertyInterface **propertyInterface);
+		QStatus CreateAnnotations(IAdapterInterface^ iface);
         static void AJ_CALL AJMethod(_In_ alljoyn_busobject busObject, _In_ const alljoyn_interfacedescription_member* member, _In_ alljoyn_message msg);
 
         // alljoyn related

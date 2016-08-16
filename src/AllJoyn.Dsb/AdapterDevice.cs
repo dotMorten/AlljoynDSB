@@ -157,6 +157,7 @@ namespace AllJoyn.Dsb
                 throw;
             }
         }
+
         protected void SignalChangeOfAttributeValue(IAdapterInterface iface, IAdapterAttribute property)
         {
             Parent?.SignalChangeOfAttributeValue(this, iface.Properties, property);

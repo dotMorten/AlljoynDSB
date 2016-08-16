@@ -280,6 +280,11 @@ namespace BridgeRT
             Platform::String^ get();
         }
 
+		property IAnnotationMap^ Annotations
+		{
+			IAnnotationMap^ get();
+		}
+
         // Device properties
         property IAdapterProperty^ Properties
         {
@@ -543,6 +548,10 @@ namespace BridgeRT
             IAdapterSignalVector^ get();
         }
 
+		property IAdapterBusObjectVector^ BusObjects
+		{
+			IAdapterBusObjectVector^ get();
+		}
         //
         //  Routine Description:
         //      SetConfiguration is called by the Bridge component to set the adapter configuration.

@@ -56,6 +56,8 @@ namespace AllJoyn.Dsb.MockDevices
         private static IAdapterInterface CreateInterface(string objectPath, double currentValue)
         {
             var iface = new AdapterInterface("org.alljoyn.SmartSpaces.Environment.CurrentHumidity");
+            iface.Annotations.Add("org.alljoyn.Bus.DocString.En", "This interface provides capability to represent current relative humidity.");
+            //iface.Annotations.Add("org.alljoyn.Bus.Secure", "true");
             iface.Properties.Add(new AdapterAttribute("Version", (ushort)1) { COVBehavior = SignalBehavior.Never });
             iface.Properties[0].Annotations.Add("org.alljoyn.Bus.DocString.En", "The interface version");
             iface.Properties.Add(new AdapterAttribute("CurrentValue", currentValue) { COVBehavior = SignalBehavior.Always });

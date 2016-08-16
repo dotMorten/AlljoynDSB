@@ -78,6 +78,7 @@ namespace AllJoyn.Dsb
 
         public IList<IAdapterSignal> Signals { get; }
         
+        public IList<IAdapterBusObject> BusObjects { get; }
 
         public Adapter(BridgeConfiguration configuration)
         {
@@ -303,17 +304,7 @@ namespace AllJoyn.Dsb
                 }
                 else
                 {
-                    IList<SIGNAL_LISTENER_ENTRY> newEntryList;
-
-                    try
-                    {
-                        newEntryList = new List<SIGNAL_LISTENER_ENTRY>();
-                    }
-                    catch (OutOfMemoryException ex)
-                    {
-                        throw;
-                    }
-
+                    IList<SIGNAL_LISTENER_ENTRY> newEntryList = new List<SIGNAL_LISTENER_ENTRY>();
                     newEntryList.Add(newEntry);
                     this.signalListeners.Add(signalHashCode, newEntryList);
                 }
@@ -384,31 +375,25 @@ namespace AllJoyn.Dsb
 
         private void createSignals()
         {
-            try
-            {
-                // Device Arrival Signal
-                AdapterSignal deviceArrivalSignal = new AdapterSignal(Constants.DEVICE_ARRIVAL_SIGNAL);
-                AdapterValue deviceHandle_arrival = new AdapterValue(
-                                                            Constants.DEVICE_ARRIVAL__DEVICE_HANDLE,
-                                                            null);
-                deviceArrivalSignal.Params.Add(deviceHandle_arrival);
+            // Device Arrival Signal
+            AdapterSignal deviceArrivalSignal = new AdapterSignal(Constants.DEVICE_ARRIVAL_SIGNAL);
+            AdapterValue deviceHandle_arrival = new AdapterValue(
+                                                        Constants.DEVICE_ARRIVAL__DEVICE_HANDLE,
+                                                        null);
+            deviceArrivalSignal.Params.Add(deviceHandle_arrival);
 
-                // Device Removal Signal
-                AdapterSignal deviceRemovalSignal = new AdapterSignal(Constants.DEVICE_REMOVAL_SIGNAL);
-                AdapterValue deviceHandle_removal = new AdapterValue(
-                                                            Constants.DEVICE_REMOVAL__DEVICE_HANDLE,
-                                                            null);
-                deviceRemovalSignal.Params.Add(deviceHandle_removal);
+            // Device Removal Signal
+            AdapterSignal deviceRemovalSignal = new AdapterSignal(Constants.DEVICE_REMOVAL_SIGNAL);
+            AdapterValue deviceHandle_removal = new AdapterValue(
+                                                        Constants.DEVICE_REMOVAL__DEVICE_HANDLE,
+                                                        null);
+            deviceRemovalSignal.Params.Add(deviceHandle_removal);
 
-                // Add Signals to the Adapter Signals
-                this.Signals.Add(deviceArrivalSignal);
-                this.Signals.Add(deviceRemovalSignal);
-            }
-            catch (OutOfMemoryException ex)
-            {
-                throw;
-            }
+            // Add Signals to the Adapter Signals
+            this.Signals.Add(deviceArrivalSignal);
+            this.Signals.Add(deviceRemovalSignal);
         }
+
         internal void SignalChangeOfAttributeValue(IAdapterDevice device, IAdapterProperty property, IAdapterAttribute attribute)
         {
             // find change of value signal of that end point (end point == bridgeRT device)
