@@ -39,7 +39,7 @@ namespace BridgeRT
         void AdapterSignalHandler(_In_ IAdapterSignal^ Signal);
 
         void Shutdown();
-        QStatus Initialize(_In_ IAdapterInterface^ iface, _In_ DeviceBusObject *parent, _In_ BridgeDevice ^bridge);
+        QStatus Initialize(_In_ IAdapterInterface^ iface, _In_ DeviceBusObject *parent, _In_ BridgeDevice ^bridge, IAdapterSignalListener^ listener);
         bool InterfaceMatchWithAdapterProperty(_In_ IAdapterProperty ^adapterProperty);
         bool InterfaceMatchWithAdapterMethod(_In_ IAdapterMethod ^adapterMethod);
         bool InterfaceMatchWithAdapterSignal(_In_ IAdapterSignal ^adapterSignal);
@@ -116,7 +116,7 @@ namespace BridgeRT
 
     private:
         QStatus CreateDeviceProperties(IAdapterInterface^ iface, BridgeDevice ^bridge, DeviceBusObject *parent);
-        QStatus CreateMethodsAndSignals(IAdapterInterface^ iface, BridgeDevice ^bridge);
+        QStatus CreateMethodsAndSignals(IAdapterInterface^ iface, IAdapterSignalListener^ bridge);
         QStatus GetInterfaceProperty(IAdapterProperty ^adapterProperty, PropertyInterface **propertyInterface);
 		QStatus CreateAnnotations(IAdapterInterface^ iface);
         static void AJ_CALL AJMethod(_In_ alljoyn_busobject busObject, _In_ const alljoyn_interfacedescription_member* member, _In_ alljoyn_message msg);

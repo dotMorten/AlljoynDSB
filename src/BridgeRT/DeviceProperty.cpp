@@ -63,11 +63,11 @@ QStatus DeviceProperty::Initialize(IAdapterProperty ^deviceProperty,  PropertyIn
         status = ER_BAD_ARG_2;
         goto leave;
     }
-    if (nullptr == parent)
+    /*if (nullptr == parent)
     {
         status = ER_BAD_ARG_3;
         goto leave;
-    }
+    }*/
 
     m_deviceProperty = deviceProperty;
     m_propertyInterface = propertyInterface;

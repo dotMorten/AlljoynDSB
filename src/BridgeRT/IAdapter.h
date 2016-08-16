@@ -241,7 +241,6 @@ namespace BridgeRT
             _In_opt_ Platform::Object^ Context
             );
     };
-
     //
     // IAdapterIcon interface.
     // Description:

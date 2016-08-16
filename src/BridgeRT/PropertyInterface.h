@@ -29,7 +29,7 @@ namespace BridgeRT
         PropertyInterface();
         virtual ~PropertyInterface();
 
-        QStatus Create(_In_ IAdapterProperty ^adapterProperty, _In_ DeviceInterface *iface, _In_ BridgeDevice ^device);
+        QStatus Create(_In_ IAdapterProperty ^adapterProperty, _In_ DeviceInterface *iface);
         bool InterfaceMatchWithAdapterProperty(_In_ IAdapterProperty ^adapterProperty);
 
         // inline alljoyn_interfacedescription GetInterfaceDescription()

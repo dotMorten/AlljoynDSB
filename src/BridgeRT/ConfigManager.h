@@ -27,6 +27,7 @@ namespace BridgeRT
 {
     class AllJoynFileTransfer;
     ref class DsbBridge;
+	class DeviceBusObject;
 
     class ConfigManager
     {
@@ -54,10 +55,22 @@ namespace BridgeRT
             return &m_bridgeConfig;
         }
 
+		// custom bus objects
+		/*std::string GetBusObjectPath(_In_ IAdapterProperty ^adapterProperty);
+		alljoyn_busobject GetBusObject(std::string &path);
+		inline alljoyn_busattachment GetBusAttachment()
+		{
+			return m_AJBusAttachment;
+		}*/
+		inline std::map<std::string, DeviceBusObject *> GetDeviceBusObjects()
+		{
+			return m_deviceBusObjects;
+		}
     private:
         QStatus	ShutdownAllJoyn();
         QStatus	InitializeCSPBusObjects();
-        QStatus BuildServiceName();
+		QStatus InitializeBusObjects();
+		QStatus BuildServiceName();
 
         // callback for session listener and session port listener
         static QCC_BOOL AJ_CALL AcceptSessionJoinerCallback(_In_ const void* context, _In_ alljoyn_sessionport sessionPort, _In_z_ const char* joiner, _In_ const alljoyn_sessionopts opts);
@@ -90,6 +103,9 @@ namespace BridgeRT
         //---------------------
         CspAdapter m_adapterCSP;
         CspBridge m_bridgeCSP;
-    };
+
+		// Custom bus objects
+		std::map<std::string, DeviceBusObject *> m_deviceBusObjects;
+	};
 }
 

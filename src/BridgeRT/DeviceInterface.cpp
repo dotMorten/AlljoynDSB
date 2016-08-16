@@ -54,7 +54,7 @@ DeviceInterface::~DeviceInterface()
     m_AJProperties.clear();
 }
 
-QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *parent, BridgeDevice ^bridge)
+QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *parent, BridgeDevice ^bridge, IAdapterSignalListener^ listener)
 {
     QStatus status = ER_OK;
     string tempName;
@@ -83,11 +83,11 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
     // note that the interface isn't suppose to already exist => ER_BUS_IFACE_ALREADY_EXISTS is an error
     if (DsbBridge::SingleInstance()->GetConfigManager()->IsDeviceAccessSecured())
     {
-        status = alljoyn_busattachment_createinterface_secure(bridge->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription, AJ_IFC_SECURITY_REQUIRED);
+        status = alljoyn_busattachment_createinterface_secure(parent->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription, AJ_IFC_SECURITY_REQUIRED);
     }
     else
     {
-        status = alljoyn_busattachment_createinterface(bridge->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription);
+        status = alljoyn_busattachment_createinterface(parent->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription);
     }
     if (ER_OK != status)
     {
@@ -104,7 +104,7 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
     {
         return status;
     }
-    status = CreateMethodsAndSignals(iface, bridge);
+    status = CreateMethodsAndSignals(iface, listener);
     if (ER_OK != status)
     {
         return status;
@@ -181,7 +181,7 @@ QStatus DeviceInterface::CreateDeviceProperties(IAdapterInterface^ iface, Bridge
         goto leave;
     }
 	
-    status = newInterface->Create(iface->Properties, this, bridge);
+    status = newInterface->Create(iface->Properties, this);
     if (ER_OK != status)
     {
         goto leave;
@@ -235,7 +235,7 @@ QStatus DeviceInterface::CreateAnnotations(IAdapterInterface^ iface)
 	return status;
 }
 
-QStatus DeviceInterface::CreateMethodsAndSignals(IAdapterInterface^ iface, BridgeDevice ^bridge)
+QStatus DeviceInterface::CreateMethodsAndSignals(IAdapterInterface^ iface, IAdapterSignalListener^ bridge)
 {
     QStatus status = ER_OK;
     DeviceMethod *method = nullptr;

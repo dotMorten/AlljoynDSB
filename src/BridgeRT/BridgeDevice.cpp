@@ -303,7 +303,20 @@ QStatus BridgeDevice::CreateBusObjects()
             status = ER_OUT_OF_MEMORY;
             goto leave;
         }
-        status = deviceBusObject->Initialize(tempBusObject, this);
+
+		//check if bus object isn't already registered
+		string tempString;
+		AllJoynHelper::EncodeBusObjectName(tempBusObject->ObjectPath, tempString);
+		auto m_AJBusObjectPath = "/" + tempString;
+
+		alljoyn_busobject bus = GetBusObject(m_AJBusObjectPath);
+		if (bus != nullptr)
+		{
+			status = ER_BAD_ARG_1;
+			goto leave;
+		}
+
+        status = deviceBusObject->Initialize(tempBusObject, this, this, m_AJBusAttachment);
         if (ER_OK != status)
         {
             goto leave;

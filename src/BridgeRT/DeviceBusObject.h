@@ -28,7 +28,7 @@ namespace BridgeRT
         DeviceBusObject();
         virtual ~DeviceBusObject();
 
-        QStatus Initialize(_In_ IAdapterBusObject^ busObject, _In_ BridgeDevice ^parent);
+        QStatus Initialize(_In_ IAdapterBusObject^ busObject, _In_ BridgeDevice ^parent, _In_ IAdapterSignalListener^ listener, _In_ alljoyn_busattachment attachment);
         void Shutdown();
         void EmitSignalCOV(_In_ IAdapterValue ^newValue, const std::vector<alljoyn_sessionid>& sessionIds);
 
@@ -57,6 +57,8 @@ namespace BridgeRT
         {
             return m_parent;
         }
+
+		alljoyn_busattachment GetBusAttachment();
         static DeviceBusObject *GetInstance(_In_ alljoyn_busobject busObject);
 
     private:
@@ -69,6 +71,7 @@ namespace BridgeRT
 
         // AllJoyn related
         alljoyn_busobject m_AJBusObject;
+		alljoyn_busattachment m_AJBusAttachment;
         bool m_registeredOnAllJoyn;
 
         std::map<std::string, DeviceInterface *> m_interfaces;

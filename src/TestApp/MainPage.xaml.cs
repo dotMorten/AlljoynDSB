@@ -11,6 +11,33 @@ namespace TestApp
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private class CustomAdapter : Adapter
+        {
+            public CustomAdapter(BridgeConfiguration config) : base(config)
+            {
+                AdapterBusObject abo = new AdapterBusObject("DSBConfig");
+                var iface = new AdapterInterface("dotMorten.Configuration");
+                iface.Properties.Add(new AdapterAttribute("TestProp", "String here", (o) =>
+                {
+                    string newValue = o as string;
+                    return AllJoynStatusCode.Ok;
+                }));
+                iface.Methods.Add(new AdapterMethod("TestMethod", "A test method", (a, b, c) =>
+                {
+                }));
+                iface.Signals.Add(new AdapterSignal("TestSignal"));
+                Windows.UI.Xaml.DispatcherTimer timer = new Windows.UI.Xaml.DispatcherTimer() { Interval = TimeSpan.FromSeconds(2) };
+                timer.Tick += Timer_Tick;
+                timer.Start();
+                abo.Interfaces.Add(iface);
+                BusObjects.Add(abo);
+            }
+
+            private void Timer_Tick(object sender, object e)
+            {
+                NotifySignalListener(BusObjects[0].Interfaces[0].Signals[0]);
+            }
+        }
         public MainPage()
         {
             this.InitializeComponent();
@@ -33,11 +60,15 @@ namespace TestApp
                     ModelName = "TestApp Model", DeviceName = "TestApp DSB",
                     ApplicationName = "TestApp ApplicationName", Vendor = "MockDevices Inc"
                 };
-                await AllJoynDsbServiceManager.Current.StartAsync(config);
+                await AllJoynDsbServiceManager.Current.StartAsync(new CustomAdapter(config));
                 status.Text = "Bridge Running"; // Bridge Successfully Initialized
                 LoadDevices();
 #if !DEBUG
-            }
+
+
+
+
+
             catch (System.Exception ex)
             {
                 status.Text = "Bridge failed to initialize:\n" + ex.Message;

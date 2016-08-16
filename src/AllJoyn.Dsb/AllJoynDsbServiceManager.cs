@@ -63,11 +63,17 @@ namespace AllJoyn.Dsb
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             
         }
-        
         public Task StartAsync(BridgeConfiguration configuration)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
+            return StartAsync(new Adapter(configuration));
+        }
+        public Task StartAsync(Adapter adapter)
+        {
+            if (adapter == null)
+                throw new ArgumentNullException(nameof(adapter));
+            this.adapter = adapter;
             if (m_startupTask == null)
             {
                 m_startupTask = ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction action) =>
@@ -75,7 +81,6 @@ namespace AllJoyn.Dsb
                     State = ServiceState.Starting;
                     try
                     {
-                        adapter = new Adapter(configuration);
                         dsbBridge = new DsbBridge(adapter);
 
                         var initResult = dsbBridge.Initialize();

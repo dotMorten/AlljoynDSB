@@ -25,6 +25,8 @@
 #include "AllJoynHelper.h"
 #include "BridgeLog.h"
 #include "BridgeUtils.h"
+#include "DeviceInterface.h"
+#include "DeviceInterfaceSignalListener.h"
 
 using namespace Platform;
 using namespace Platform::Collections;
@@ -482,6 +484,12 @@ DsbBridge::AdapterSignalHandler(
         AutoLock bridgeLocker(this->m_bridgeLock);
         UpdateDevice(adapterDevice, false);
     }
+	else
+	{
+		DeviceInterfaceSignalListener^ iface = (DeviceInterfaceSignalListener^)Context;
+		auto i = iface->GetInterface();
+		i->AdapterSignalHandler(Signal);
+	}
 
 Leave:
     return;

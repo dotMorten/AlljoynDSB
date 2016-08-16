@@ -47,7 +47,7 @@ DeviceBusObject::~DeviceBusObject()
 {
 }
 
-QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^parent)
+QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^parent, IAdapterSignalListener^ listener, alljoyn_busattachment attachment)
 {
     QStatus status = ER_OK;
     string tempString;
@@ -70,24 +70,26 @@ QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^
         status = ER_BAD_ARG_1;
         goto leave;
     }
-    if (nullptr == parent)
+    if (nullptr == listener)
     {
-        status = ER_BAD_ARG_2;
+        status = ER_BAD_ARG_3;
         goto leave;
     }
+	if (attachment == nullptr)
+	{
+		status = ER_BAD_ARG_4;
+		goto leave;
+	}
 
-    m_parent = parent;
+	if (parent != nullptr)
+		m_parent = parent;
+	else
+		m_AJBusAttachment = attachment;
 
     // build bus object path
     AllJoynHelper::EncodeBusObjectName(busObject->ObjectPath, tempString);
     m_AJBusObjectPath = "/" + tempString;
 
-    alljoyn_busobject bus = parent->GetBusObject(m_AJBusObjectPath);
-    if (bus != nullptr)
-    {
-        status = ER_BAD_ARG_1;
-        goto leave;
-    }
 
     // create alljoyn bus object and register it
     m_AJBusObject = alljoyn_busobject_create(m_AJBusObjectPath.c_str(), QCC_FALSE, &callbacks, this);
@@ -106,7 +108,7 @@ QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^
             status = ER_OUT_OF_MEMORY;
             goto leave;
         }
-        status = deviceProperty->Initialize(iface, this, parent);
+        status = deviceProperty->Initialize(iface, this, parent, listener);
         if (ER_OK != status)
         {
             goto leave;
@@ -114,7 +116,7 @@ QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^
         m_interfaces.insert(std::make_pair(*deviceProperty->GetInterfaceName(), deviceProperty));
         deviceProperty = nullptr;
     }
-    status = alljoyn_busattachment_registerbusobject(parent->GetBusAttachment(), m_AJBusObject);
+    status = alljoyn_busattachment_registerbusobject(GetBusAttachment(), m_AJBusObject);
     m_registeredOnAllJoyn = true;
 leave:
     return status;
@@ -141,7 +143,13 @@ void DeviceBusObject::Shutdown()
     m_parent = nullptr;
     m_AJBusObjectPath.clear();
 }
-
+alljoyn_busattachment DeviceBusObject::GetBusAttachment()
+{
+	if (m_parent != nullptr)
+		m_parent->GetBusAttachment();
+	else
+		return m_AJBusAttachment;
+}
 
 QStatus AJ_CALL DeviceBusObject::GetProperty(_In_ const void* context, _In_z_ const char* ifcName, _In_z_ const char* propName, _Out_ alljoyn_msgarg val)
 {
@@ -221,6 +229,13 @@ DeviceBusObject *DeviceBusObject::GetInstance(_In_ alljoyn_busobject busObject)
                 return bus.second;
         }
     }
+	// Check the DSB device itself
+	auto objectPointer2 = DsbBridge::SingleInstance()->GetDeviceBusObjects();
+	for (auto bus : objectPointer2)
+	{
+		if (bus.second->GetBusObject() == busObject)
+			return bus.second;
+	}
 
     return nullptr;
 }

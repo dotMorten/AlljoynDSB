@@ -25,6 +25,7 @@
 #include "AllJoynFileTransfer.h"
 #include "BridgeConfig.h"
 #include "AllJoynHelper.h"
+#include "DeviceBusObject.h"
 
 #include "ConfigManager.h"
 #include "BridgeUtils.h"
@@ -173,6 +174,13 @@ QStatus ConfigManager::ConnectToAllJoyn(_In_ IAdapter^ adapter)
         BridgeLog::Instance()->LogInfo(L"Problem initializing CSP Bus Objects.");
         goto Leave;
     }
+
+	status = this->InitializeBusObjects();
+	if (ER_OK != status)
+	{
+		BridgeLog::Instance()->LogInfo(L"Problem initializing custom Bus Objects.");
+		goto Leave;
+	}
 
     //
     // Due to a legacy issue with the FltMgr Driver, it is possible that the NamedPipeTrigger (NpSvcTrigger) filter driver will not
@@ -378,6 +386,35 @@ QStatus ConfigManager::InitializeCSPBusObjects()
 
 Leave:
     return status;
+}
+
+QStatus ConfigManager::InitializeBusObjects()
+{
+	QStatus status = ER_OK;
+	if (m_adapter->BusObjects != nullptr)
+	{
+		for (auto tempBusObject : m_adapter->BusObjects)
+		{
+			DeviceInterface *propertyInterface = nullptr;
+
+			// create device property
+			auto deviceBusObject = new (std::nothrow) DeviceBusObject();
+			if (nullptr == deviceBusObject)
+			{
+				status = ER_OUT_OF_MEMORY;
+				goto leave;
+			}
+			status = deviceBusObject->Initialize(tempBusObject, nullptr, m_parent, m_AJBusAttachment);
+			if (ER_OK != status)
+			{
+				goto leave;
+			}
+			m_deviceBusObjects.insert(std::make_pair(*deviceBusObject->GetPathName(), deviceBusObject));
+			deviceBusObject = nullptr;
+		}
+	}
+leave:
+	return status;
 }
 
 bool BridgeRT::ConfigManager::IsConfigurationAccessSecured()

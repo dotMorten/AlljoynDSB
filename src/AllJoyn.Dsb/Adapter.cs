@@ -51,7 +51,7 @@ namespace AllJoyn.Dsb
         public string DeviceName { get; set; }
         public string ModelName { get; set; }
     }
-    public sealed class Adapter : IAdapter
+    public class Adapter : IAdapter
     {
         private const uint ERROR_SUCCESS = 0;
         private const uint ERROR_INVALID_HANDLE = 6;
@@ -77,8 +77,8 @@ namespace AllJoyn.Dsb
         public Guid ExposedApplicationGuid { get; }
 
         public IList<IAdapterSignal> Signals { get; }
-        
-        public IList<IAdapterBusObject> BusObjects { get; }
+
+        public IList<IAdapterBusObject> BusObjects { get; } = new List<IAdapterBusObject>();
 
         public Adapter(BridgeConfiguration configuration)
         {
@@ -183,16 +183,7 @@ namespace AllJoyn.Dsb
             out IAdapterIoRequest RequestPtr)
         {
             RequestPtr = null;
-
-            try
-            {
-                DeviceListPtr = new List<IAdapterDevice>(this.devices);
-            }
-            catch (OutOfMemoryException ex)
-            {
-                throw;
-            }
-
+            DeviceListPtr = new List<IAdapterDevice>(this.devices);
             return ERROR_SUCCESS;
         }
 

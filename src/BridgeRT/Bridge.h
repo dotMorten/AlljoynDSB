@@ -64,6 +64,10 @@ namespace BridgeRT
         {
             return m_deviceList;
         }
+		inline std::map<std::string, DeviceBusObject *> GetDeviceBusObjects()
+		{
+			return m_configManager.GetDeviceBusObjects();
+		}
 
     private:
         int32		registerAdapterSignalHandlers(bool IsRegister);

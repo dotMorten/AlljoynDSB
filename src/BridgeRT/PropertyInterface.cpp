@@ -47,7 +47,7 @@ PropertyInterface::~PropertyInterface()
     m_AJProperties.clear();
 }
 
-QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, DeviceInterface *iface, BridgeDevice ^device)
+QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, DeviceInterface *iface)
 {
     QStatus status = ER_OK;
     string tempName;
@@ -57,11 +57,6 @@ QStatus PropertyInterface::Create(IAdapterProperty ^adapterProperty, DeviceInter
     if (nullptr == adapterProperty)
     {
         status = ER_BAD_ARG_1;
-        goto leave;
-    }
-    if (nullptr == device)
-    {
-        status = ER_BAD_ARG_3;
         goto leave;
     }
     m_interface = iface;
