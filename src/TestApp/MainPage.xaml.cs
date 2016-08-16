@@ -64,11 +64,7 @@ namespace TestApp
                 status.Text = "Bridge Running"; // Bridge Successfully Initialized
                 LoadDevices();
 #if !DEBUG
-
-
-
-
-
+            }
             catch (System.Exception ex)
             {
                 status.Text = "Bridge failed to initialize:\n" + ex.Message;
