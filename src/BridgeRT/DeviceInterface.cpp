@@ -54,7 +54,7 @@ DeviceInterface::~DeviceInterface()
     m_AJProperties.clear();
 }
 
-QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *parent, BridgeDevice ^bridge, IAdapterSignalListener^ listener)
+QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *parent, BridgeDevice ^bridge, IAdapterSignalListener^ listener, alljoyn_busattachment ajBusAttachment)
 {
     QStatus status = ER_OK;
     string tempName;
@@ -83,11 +83,11 @@ QStatus DeviceInterface::Initialize(IAdapterInterface^ iface, DeviceBusObject *p
     // note that the interface isn't suppose to already exist => ER_BUS_IFACE_ALREADY_EXISTS is an error
     if (DsbBridge::SingleInstance()->GetConfigManager()->IsDeviceAccessSecured())
     {
-        status = alljoyn_busattachment_createinterface_secure(parent->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription, AJ_IFC_SECURITY_REQUIRED);
+        status = alljoyn_busattachment_createinterface_secure(ajBusAttachment, m_interfaceName.c_str(), &m_interfaceDescription, AJ_IFC_SECURITY_REQUIRED);
     }
     else
     {
-        status = alljoyn_busattachment_createinterface(parent->GetBusAttachment(), m_interfaceName.c_str(), &m_interfaceDescription);
+        status = alljoyn_busattachment_createinterface(ajBusAttachment, m_interfaceName.c_str(), &m_interfaceDescription);
     }
     if (ER_OK != status)
     {

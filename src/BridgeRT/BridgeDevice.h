@@ -57,7 +57,7 @@ namespace BridgeRT
         {
             return m_uniqueIdForInterfaces++;
         }
-        inline alljoyn_busattachment GetBusAttachment()
+        alljoyn_busattachment GetBusAttachment()
         {
             return m_AJBusAttachment;
         }

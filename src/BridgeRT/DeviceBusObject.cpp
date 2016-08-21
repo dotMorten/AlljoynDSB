@@ -83,8 +83,7 @@ QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^
 
 	if (parent != nullptr)
 		m_parent = parent;
-	else
-		m_AJBusAttachment = attachment;
+	m_AJBusAttachment = attachment;
 
     // build bus object path
     AllJoynHelper::EncodeBusObjectName(busObject->ObjectPath, tempString);
@@ -108,7 +107,7 @@ QStatus DeviceBusObject::Initialize(IAdapterBusObject^ busObject, BridgeDevice ^
             status = ER_OUT_OF_MEMORY;
             goto leave;
         }
-        status = deviceProperty->Initialize(iface, this, parent, listener);
+        status = deviceProperty->Initialize(iface, this, parent, listener, GetBusAttachment());
         if (ER_OK != status)
         {
             goto leave;
@@ -145,9 +144,9 @@ void DeviceBusObject::Shutdown()
 }
 alljoyn_busattachment DeviceBusObject::GetBusAttachment()
 {
-	if (m_parent != nullptr)
-		m_parent->GetBusAttachment();
-	else
+	// if (m_parent != nullptr)
+	// 	m_parent->GetBusAttachment();
+	// else
 		return m_AJBusAttachment;
 }
 
